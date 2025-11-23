@@ -10,7 +10,7 @@ public class Coin : MonoBehaviour
         if (other.CompareTag("Player"))
         {
             // GameManager 찾기
-            GameManager gameManager = FindObjectOfType<GameManager>();
+            GameManager gameManager = FindFirstObjectByType<GameManager>();
             
             if (gameManager != null)
             {

@@ -8,6 +8,8 @@ TagManager:
   - Coin
   - Obstacle
   - Goal
+  - Boss
+  - BossAttack
   layers:
   - Default
   - TransparentFX

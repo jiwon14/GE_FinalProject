@@ -55,19 +55,34 @@ public class PlayerController : MonoBehaviour
         {
             isGrounded = true;
         }
-        // 장애물 충돌 시 생명 감소로 변경!
+
+        // 보스와의 충돌을 최우선으로 처리합니다.
+        if (collision.gameObject.CompareTag("Boss"))
+        {
+            // 보스 컨트롤러를 가져와서 공격 중인지 확인합니다.
+            BossController boss = collision.gameObject.GetComponent<BossController>();
+            if (boss != null && boss.IsAttacking)
+            {
+                Debug.Log("👹 보스의 몸체 공격에 맞음! 생명 -1");
+                GameManager gameManager = FindFirstObjectByType<GameManager>();
+                if (gameManager != null)
+                {
+                    gameManager.TakeDamage(1); // 생명 1 감소
+                }
+            }
+            // 보스와 충돌 시에는 장애물 로직을 타지 않도록 여기서 함수를 종료합니다.
+            return; 
+        }
+
+        // 일반 장애물과 충돌했을 때 (보스가 아닐 경우에만 실행됩니다)
         if (collision.gameObject.CompareTag("Obstacle"))
         {
             Debug.Log("⚠️ 장애물 충돌! 생명 -1");
-            // GameManager 찾아서 생명 감소
-            GameManager gameManager = FindObjectOfType<GameManager>();
-
+            GameManager gameManager = FindFirstObjectByType<GameManager>();
             if (gameManager != null)
             {
                 gameManager.TakeDamage(1);  // 생명 1 감소
             }
-
-            // 짧은 무적 시간 (0.5초 후 원래 위치로)
             transform.position = startPosition;
             rb.linearVelocity = Vector2.zero;
         }
@@ -87,7 +102,7 @@ void OnTriggerEnter2D(Collider2D other)
 	// 코인 수집 (기존)
 	if (other.CompareTag("Coin"))
 	{
-		GameManager gameManager = FindObjectOfType<GameManager>();
+		GameManager gameManager = FindFirstObjectByType<GameManager>();
 		if (gameManager != null)
 		{
 			gameManager.AddScore(10);
@@ -98,13 +113,23 @@ void OnTriggerEnter2D(Collider2D other)
 	if (other.CompareTag("Goal"))
 	{
 		Debug.Log("🎉 Goal Reached!");
-		GameManager gameManager = FindObjectOfType<GameManager>();
+		GameManager gameManager = FindFirstObjectByType<GameManager>();
 		if (gameManager != null)
 		{
 			gameManager.GameClear();  // 게임 클리어 함수 호출
 		}
 	}
+
+	// 보스의 찌르기 공격(트리거)에 맞았을 때
+	if (other.CompareTag("BossAttack"))
+	{
+		Debug.Log("🔪 보스의 찌르기 공격에 맞음! 생명 -1");
+		GameManager gameManager = FindFirstObjectByType<GameManager>();
+		if (gameManager != null)
+		{
+			gameManager.TakeDamage(1); // 생명 1 감소
+		}
+	}
 }
 
 }
-
