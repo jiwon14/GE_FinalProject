@@ -15,6 +15,8 @@ public class PlayerController : MonoBehaviour
     private bool isParrying = false;
     private bool canParry = true;
 
+    
+
 
     SpriteRenderer sp;
     private Rigidbody2D rb;

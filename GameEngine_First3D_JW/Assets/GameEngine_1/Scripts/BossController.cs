@@ -24,7 +24,6 @@ public class BossController : MonoBehaviour
     public float chargeSpeed = 8f;       // 돌진 속도
     public float actionCooldown = 2f;    // 행동과 행동 사이의 대기 시간
     public GameObject pierceAttackHitbox; // 전방 찌르기 공격 판정 (Inspector에서 할당)
-
     private Rigidbody2D rb;
     private SpriteRenderer spriteRenderer;
     private BossState currentState = BossState.Idle;
@@ -36,11 +35,13 @@ public class BossController : MonoBehaviour
     private Vector3 pierceHitboxInitialLocalPos;  // 찌르기 히트박스의 초기 로컬 위치
     private CapsuleCollider2D capsuleCollider;    // 보스의 메인 콜라이더
     private Vector2 moveDirection = Vector2.zero; // FixedUpdate에서 사용할 이동 방향
+    private Animator animator;
     void Awake()
     {
         rb = GetComponent<Rigidbody2D>();
         spriteRenderer = GetComponent<SpriteRenderer>();
         originalColor = spriteRenderer.color;
+        animator = GetComponent<Animator>();
 
         capsuleCollider = GetComponent<CapsuleCollider2D>();
         if (playerTransform == null)
@@ -207,10 +208,12 @@ public class BossController : MonoBehaviour
     {
         SetState(BossState.Attacking);
 
-        spriteRenderer.color = Color.red; // 색을 빨갛게 변경
-        yield return new WaitForSeconds(0.8f); // 0.8초 동안 공격 모션 (대기)
+        animator.SetTrigger("Attack"); // 공격 애니메이션 시작
+
+        yield return new WaitForSeconds(0.4f); // 애니메이션 중 공격 판정이 발생할 때까지 대기
         PerformMeleeAttack(1, 2.0f); // 범위 2.0f의 근접 공격 실행
-        spriteRenderer.color = originalColor; // 원래 색으로 복구
+
+        yield return new WaitForSeconds(0.4f); // 나머지 애니메이션 시간 동안 대기
 
         // 코루틴 종료 시점에 직접 다음 이동 방향을 설정해줍니다.
         if (playerTransform != null)
