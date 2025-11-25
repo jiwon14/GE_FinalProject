@@ -11,13 +11,15 @@ public class BossController : MonoBehaviour
         Moving,     // 좌우로 움직이는 중
         Attacking,  // 일반 공격 중
         StrongAttacking, // 강한 공격 중
-        Piercing    // 찌르기 공격 중
+        Piercing,    // 찌르기 공격 중
+        Stunned     // 패링 당해서 기절한 상태
     }
 
     [Header("참조")]
     public Transform playerTransform; // 플레이어의 Transform (Inspector에서 할당)
 
     [Header("능력치")]
+    [SerializeField] private int health = 50;  // 보스 체력
     public float moveSpeed = 2f;         // 이동 속도
     public float chargeSpeed = 8f;       // 돌진 속도
     public float actionCooldown = 2f;    // 행동과 행동 사이의 대기 시간
@@ -32,9 +34,7 @@ public class BossController : MonoBehaviour
     private Color originalColor;                  // 원래 스프라이트 색상
 
     private Vector3 pierceHitboxInitialLocalPos;  // 찌르기 히트박스의 초기 로컬 위치
-    // 플레이어가 보스의 공격 상태를 확인할 수 있도록 public으로 선언합니다.
-    public bool IsAttacking { get; private set; } = false;
-
+    private CapsuleCollider2D capsuleCollider;    // 보스의 메인 콜라이더
     private Vector2 moveDirection = Vector2.zero; // FixedUpdate에서 사용할 이동 방향
     void Awake()
     {
@@ -42,6 +42,7 @@ public class BossController : MonoBehaviour
         spriteRenderer = GetComponent<SpriteRenderer>();
         originalColor = spriteRenderer.color;
 
+        capsuleCollider = GetComponent<CapsuleCollider2D>();
         if (playerTransform == null)
         {
             Debug.LogError("플레이어 Transform이 BossController에 할당되지 않았습니다!");
@@ -57,6 +58,9 @@ public class BossController : MonoBehaviour
 
     void Update()
     {
+        // 스턴 상태일 때는 아무것도 하지 않습니다.
+        if (currentState == BossState.Stunned) return;
+
         // FSM(상태 머신)을 매 프레임 실행합니다.
         switch (currentState)
         {
@@ -103,7 +107,11 @@ public class BossController : MonoBehaviour
     void FixedUpdate()
     {
         // 특정 공격(일반, 돌진, 찌르기) 중에는 FixedUpdate가 속도를 제어하지 않도록 합니다.
-        if (currentState == BossState.Attacking || currentState == BossState.StrongAttacking || currentState == BossState.Piercing)
+        // 이동이 제어되는 상태가 아닐 경우 물리 업데이트를 중단합니다.
+        if (currentState == BossState.Attacking || currentState == BossState.StrongAttacking || 
+            currentState == BossState.Piercing ||
+            currentState == BossState.Stunned ||
+            currentState == BossState.Idle)
         {
             return;
         }
@@ -114,6 +122,9 @@ public class BossController : MonoBehaviour
     // 상태를 변경하고 로그를 출력하는 함수
     void SetState(BossState newState)
     {
+        // 이미 같은 상태라면 변경하지 않습니다.
+        if (currentState == newState) return;
+
         currentState = newState;
         Debug.Log($"보스 상태 변경: {newState}");
     }
@@ -159,10 +170,10 @@ public class BossController : MonoBehaviour
                 StartCoroutine(AttackRoutine());
                 break;
             case 1:
-                StartCoroutine(PierceRoutine());
-                break;
-            case 2: // 강한 공격
                 StartCoroutine(StrongAttackRoutine());
+                break;
+            case 2:
+                StartCoroutine(PierceRoutine());
                 break;
         }
         lastActionTime = Time.time; // 마지막 행동 시간 기록
@@ -195,13 +206,11 @@ public class BossController : MonoBehaviour
     private IEnumerator AttackRoutine()
     {
         SetState(BossState.Attacking);
-        IsAttacking = true; // 공격 시작!
 
         spriteRenderer.color = Color.red; // 색을 빨갛게 변경
         yield return new WaitForSeconds(0.8f); // 0.8초 동안 공격 모션 (대기)
+        PerformMeleeAttack(1, 2.0f); // 범위 2.0f의 근접 공격 실행
         spriteRenderer.color = originalColor; // 원래 색으로 복구
-
-        IsAttacking = false; // 공격 끝!
 
         // 코루틴 종료 시점에 직접 다음 이동 방향을 설정해줍니다.
         if (playerTransform != null)
@@ -216,28 +225,49 @@ public class BossController : MonoBehaviour
     private IEnumerator StrongAttackRoutine()
     {
         SetState(BossState.StrongAttacking);
-        IsAttacking = true; // 공격 시작!
 
         // 3-1. 공격 예고 (파란색으로 변경)
         spriteRenderer.color = Color.blue;
         yield return new WaitForSeconds(0.7f); // 0.7초 예고 동작
 
-        // 3-2. 뒤로 짧게 이동
-        // float backdashDistance = 2f; // 사용되지 않으므로 주석 처리 또는 삭제
+        // 3-2. 뒤로 짧게 물러나기
         float directionToPlayer = (playerTransform.position.x > transform.position.x) ? 1f : -1f;
-        // FixedUpdate 대신 즉각적인 반응을 위해 AddForce 사용 또는 velocity 직접 제어
-        rb.linearVelocity = new Vector2(-directionToPlayer * moveSpeed, 0); 
+        rb.linearVelocity = new Vector2(-directionToPlayer * moveSpeed, 0);
         yield return new WaitForSeconds(0.4f); // 0.4초 동안 뒤로 이동
 
-        // 3-3. 앞으로 돌진
+        // 3-3. 플레이어 방향으로 돌진
         rb.linearVelocity = new Vector2(directionToPlayer * chargeSpeed, 0); 
-        yield return new WaitForSeconds(0.8f); // 0.8초 동안 돌진
 
-        // 3-4. 원상 복구
+        // 3-4. 돌진하는 동안 매 프레임 충돌을 감지
+        float chargeDuration = 0.8f;
+        float chargeTimer = 0f;
+        bool hasHit = false; // 돌진 중 한 번만 피격되도록 처리
+
+        while (chargeTimer < chargeDuration)
+        {
+            if (!hasHit) // 아직 공격이 적중하지 않았을 때만 판정
+            {
+                // 보스의 캡슐 콜라이더와 겹치는 플레이어를 찾습니다.
+                ContactFilter2D filter = new ContactFilter2D().NoFilter();
+                filter.SetLayerMask(LayerMask.GetMask("Player")); // 플레이어 레이어만 감지하도록 필터 설정
+                Collider2D[] hitPlayers = new Collider2D[1];
+                int hitCount = capsuleCollider.Overlap(filter, hitPlayers);
+
+                if (hitCount > 0)
+                {
+                    Collider2D playerCollider = hitPlayers[0];
+                    Debug.Log("돌진 공격이 플레이어에게 적중!");
+                    playerCollider.GetComponent<PlayerController>()?.HandleAttack(2, gameObject);
+                    hasHit = true; // 공격이 적중했음을 표시
+                }
+            }
+            chargeTimer += Time.deltaTime;
+            yield return null; // 다음 프레임까지 대기
+        }
+
+        // 3-5. 돌진 후 정지 및 원상 복구
         rb.linearVelocity = Vector2.zero;
         spriteRenderer.color = originalColor;
-
-        IsAttacking = false; // 공격 끝!
 
         // 코루틴 종료 시점에 직접 다음 이동 방향을 설정해줍니다.
         if (playerTransform != null)
@@ -252,7 +282,6 @@ public class BossController : MonoBehaviour
     private IEnumerator PierceRoutine()
     {
         SetState(BossState.Piercing);
-        IsAttacking = true; // 공격 시작! (플레이어와의 충돌 시 순간이동 방지)
 
         spriteRenderer.color = Color.black; // 색을 검은색으로 변경
         yield return new WaitForSeconds(0.5f); // 0.5초 공격 준비
@@ -260,12 +289,13 @@ public class BossController : MonoBehaviour
         // 공격 판정 활성화
         if (pierceAttackHitbox != null) pierceAttackHitbox.SetActive(true);
 
+        // 찌르기 공격은 PlayerController의 OnTriggerEnter2D에서 감지하여 HandleAttack을 호출합니다.
+        // 따라서 여기서는 별도로 TryDamagePlayer를 호출하지 않습니다.
         yield return new WaitForSeconds(0.3f); // 0.3초 동안 공격 판정 유지
 
         // 공격 판정 비활성화 및 원상 복구
         if (pierceAttackHitbox != null) pierceAttackHitbox.SetActive(false);
         spriteRenderer.color = originalColor;
-        IsAttacking = false; // 공격 끝!
 
         // 상태가 전환된 후 다음 Update가 실행되기 전까지 멈추는 현상을 방지하기 위해
         // 코루틴 종료 시점에 직접 다음 이동 방향을 설정해줍니다.
@@ -276,6 +306,72 @@ public class BossController : MonoBehaviour
         SetState(BossState.Deciding); // 다시 결정 상태로
     }
 
+    // --- 패링 및 스턴 로직 ---
+
+    // 근접 공격을 수행하고 플레이어에게 데미지를 시도하는 함수
+    void PerformMeleeAttack(int damage, float attackRange)
+    {
+        // 공격 순간에 스턴 상태면 데미지를 주지 않습니다.
+        if (currentState == BossState.Stunned) return;
+
+        // 지정된 범위 내의 모든 'Player' 레이어를 가진 콜라이더를 찾습니다.
+        Collider2D[] hitPlayers = Physics2D.OverlapCircleAll(transform.position, attackRange, LayerMask.GetMask("Player"));
+
+        foreach (Collider2D playerCollider in hitPlayers)
+        {
+            Debug.Log("근접 공격이 플레이어에게 적중!");
+            PlayerController pc = playerCollider.GetComponent<PlayerController>();
+            if(pc != null)
+            {
+                // 플레이어의 HandleAttack 함수를 호출하여 패링 여부 판단을 위임합니다.
+                pc.HandleAttack(damage, gameObject);
+            }
+        }
+    }
+
+    // 데미지를 받는 함수 (외부에서 호출 가능)
+    public void TakeDamage(int damage)
+    {
+        // 스턴 상태가 아닐 때는 데미지를 받지 않거나, 특정 로직을 추가할 수 있습니다.
+        // 여기서는 패링 성공 시에만 데미지를 입히므로 별도 조건 없이 체력을 감소시킵니다.
+        health -= damage;
+        Debug.Log($"<color=red>보스 피격! 남은 체력: {health}</color>");
+
+        if (health <= 0)
+        {
+            Die();
+        }
+    }
+
+    private void Die()
+    {
+        Debug.Log("보스가 쓰러졌습니다!");
+        Destroy(gameObject); // 보스 오브젝트 파괴
+    }
+
+    // 외부(PlayerController)에서 호출될 스턴 함수
+    public void GetStunned()
+    {
+        // 이미 스턴 상태라면 다시 실행하지 않습니다.
+        if (currentState == BossState.Stunned) return;
+
+        StopAllCoroutines(); // 진행 중인 모든 공격 행동을 즉시 중단합니다.
+        StartCoroutine(StunRoutine());
+    }
+
+    private IEnumerator StunRoutine()
+    {
+        SetState(BossState.Stunned);
+        rb.linearVelocity = Vector2.zero; // 물리적 움직임을 멈춥니다.
+        Debug.Log("보스: 크윽... (스턴 상태)");
+        spriteRenderer.color = Color.cyan; // 스턴 상태를 시안 색으로 표시
+
+        yield return new WaitForSeconds(3.0f); // 3초 동안 스턴
+
+        spriteRenderer.color = originalColor; // 원래 색으로 복구
+        lastActionTime = Time.time; // 스턴이 풀린 직후 바로 공격하지 않도록 쿨타임을 초기화합니다.
+        SetState(BossState.Deciding); // 다시 행동 결정 상태로 돌아갑니다.
+    }
 
     // --- 플레이어 감지 로직 ---
 
@@ -298,4 +394,5 @@ public class BossController : MonoBehaviour
             Debug.Log("플레이어가 감지 범위를 벗어남!");
         }
     }
+
 }

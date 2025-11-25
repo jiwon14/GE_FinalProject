@@ -17,10 +17,11 @@ public class GameManager : MonoBehaviour
     public TextMeshProUGUI clearTimeText;  // 클리어 시간!
     
 	[Header("게임 상태")]
+	[SerializeField] private int playerStartHealth = 5; // 플레이어 시작 체력
 	private int score = 0;
 	private float playTime = 0f;
 	private bool isPlaying = false;
-	private int health = 3;
+	private int health; // 현재 체력을 저장하는 변수
 	void Start()
 	{
 		ShowTitleScreen();
@@ -57,7 +58,7 @@ public class GameManager : MonoBehaviour
 		Time.timeScale = 1f;
 		score = 0;
 		playTime = 0f;
-		health = 3;
+		health = playerStartHealth; // 설정한 시작 체력으로 초기화
 		isPlaying = true;
 		UpdateScoreUI();
 		UpdateTimeUI();

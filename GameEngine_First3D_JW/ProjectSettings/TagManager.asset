@@ -10,15 +10,16 @@ TagManager:
   - Goal
   - Boss
   - BossAttack
+  - Detection
   layers:
   - Default
   - TransparentFX
   - Ignore Raycast
-  - 
+  - Boss
   - Water
   - UI
-  - 
-  - 
+  - Player
+  - Detection
   - 
   - 
   - 
