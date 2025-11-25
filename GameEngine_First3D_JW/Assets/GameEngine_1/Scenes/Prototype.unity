@@ -308,13 +308,13 @@ GameObject:
   - component: {fileID: 161401150}
   - component: {fileID: 161401149}
   - component: {fileID: 161401151}
-  m_Layer: 3
+  m_Layer: 8
   m_Name: Attack_01
   m_TagString: BossAttack
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!61 &161401149
 BoxCollider2D:
   m_ObjectHideFlags: 0
@@ -370,8 +370,8 @@ Transform:
   m_GameObject: {fileID: 161401148}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 6.6, y: -0.53, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_LocalPosition: {x: 5.56, y: -0.4622, z: 0}
+  m_LocalScale: {x: 4.8603, y: 0.6705, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 1587166906}

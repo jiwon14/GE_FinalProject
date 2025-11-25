@@ -107,17 +107,11 @@ public class BossController : MonoBehaviour
     // 물리 계산은 FixedUpdate에서 처리합니다.
     void FixedUpdate()
     {
-        // 특정 공격(일반, 돌진, 찌르기) 중에는 FixedUpdate가 속도를 제어하지 않도록 합니다.
-        // 이동이 제어되는 상태가 아닐 경우 물리 업데이트를 중단합니다.
-        if (currentState == BossState.Attacking || currentState == BossState.StrongAttacking || 
-            currentState == BossState.Piercing ||
-            currentState == BossState.Stunned ||
-            currentState == BossState.Idle)
+        // 'Deciding' 또는 'Moving' 상태일 때만 이동 로직을 실행합니다.
+        if (currentState == BossState.Deciding || currentState == BossState.Moving)
         {
-            return;
+            rb.linearVelocity = new Vector2(moveDirection.x * moveSpeed, rb.linearVelocity.y);
         }
-
-        rb.linearVelocity = new Vector2(moveDirection.x * moveSpeed, rb.linearVelocity.y);
     }
 
     // 상태를 변경하고 로그를 출력하는 함수
@@ -208,12 +202,14 @@ public class BossController : MonoBehaviour
     {
         SetState(BossState.Attacking);
 
-        animator.SetTrigger("Attack"); // 공격 애니메이션 시작
+        // 공격 예고 (빨간색으로 변경)
+        spriteRenderer.color = Color.red;
 
-        yield return new WaitForSeconds(0.4f); // 애니메이션 중 공격 판정이 발생할 때까지 대기
+        yield return new WaitForSeconds(0.4f); // 예고 동작 대기
         PerformMeleeAttack(1, 2.0f); // 범위 2.0f의 근접 공격 실행
 
-        yield return new WaitForSeconds(0.4f); // 나머지 애니메이션 시간 동안 대기
+        yield return new WaitForSeconds(0.4f); // 공격 후 대기
+        spriteRenderer.color = originalColor; // 원래 색으로 복구
 
         // 코루틴 종료 시점에 직접 다음 이동 방향을 설정해줍니다.
         if (playerTransform != null)
@@ -229,8 +225,8 @@ public class BossController : MonoBehaviour
     {
         SetState(BossState.StrongAttacking);
 
-        // 3-1. 공격 예고 (파란색으로 변경)
-        spriteRenderer.color = Color.blue;
+        // 3-1. 공격 예고 (애니메이션 재생)
+        animator.SetTrigger("StrongAttack"); // "StrongAttack" 애니메이션 트리거
         yield return new WaitForSeconds(0.7f); // 0.7초 예고 동작
 
         // 3-2. 뒤로 짧게 물러나기
@@ -270,7 +266,8 @@ public class BossController : MonoBehaviour
 
         // 3-5. 돌진 후 정지 및 원상 복구
         rb.linearVelocity = Vector2.zero;
-        spriteRenderer.color = originalColor;
+        // 애니메이션이 끝나면 자동으로 원래 상태로 돌아가므로 색상 복구 코드는 필요 없습니다.
+        // spriteRenderer.color = originalColor;
 
         // 코루틴 종료 시점에 직접 다음 이동 방향을 설정해줍니다.
         if (playerTransform != null)
@@ -300,12 +297,12 @@ public class BossController : MonoBehaviour
         if (pierceAttackHitbox != null) pierceAttackHitbox.SetActive(false);
         spriteRenderer.color = originalColor;
 
-        // 상태가 전환된 후 다음 Update가 실행되기 전까지 멈추는 현상을 방지하기 위해
         // 코루틴 종료 시점에 직접 다음 이동 방향을 설정해줍니다.
         if (playerTransform != null)
         {
             moveDirection.x = (playerTransform.position.x > transform.position.x) ? 1f : -1f;
         }
+
         SetState(BossState.Deciding); // 다시 결정 상태로
     }
 
@@ -355,8 +352,8 @@ public class BossController : MonoBehaviour
     // 외부(PlayerController)에서 호출될 스턴 함수
     public void GetStunned()
     {
-        // 이미 스턴 상태라면 다시 실행하지 않습니다.
-        if (currentState == BossState.Stunned) return;
+        // 이미 스턴 상태이거나, 패링이 불가능한 찌르기 공격 중에는 스턴에 걸리지 않습니다.
+        if (currentState == BossState.Stunned || currentState == BossState.Piercing) return;
 
         StopAllCoroutines(); // 진행 중인 모든 공격 행동을 즉시 중단합니다.
         StartCoroutine(StunRoutine());
@@ -369,7 +366,7 @@ public class BossController : MonoBehaviour
         Debug.Log("보스: 크윽... (스턴 상태)");
         spriteRenderer.color = Color.cyan; // 스턴 상태를 시안 색으로 표시
 
-        yield return new WaitForSeconds(3.0f); // 3초 동안 스턴
+        yield return new WaitForSeconds(1.5f); // 1.5초 동안 스턴
 
         spriteRenderer.color = originalColor; // 원래 색으로 복구
         lastActionTime = Time.time; // 스턴이 풀린 직후 바로 공격하지 않도록 쿨타임을 초기화합니다.
