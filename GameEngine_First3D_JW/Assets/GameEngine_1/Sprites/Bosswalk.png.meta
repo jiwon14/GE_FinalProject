@@ -1,5 +1,5 @@
 fileFormatVersion: 2
-guid: a883d2b5429fdea42a6dfd4fd89f53b1
+guid: c9084e258aeb9ee4dba587916baa8c88
 TextureImporter:
   internalIDToNameTable: []
   externalObjects: {}
@@ -48,7 +48,7 @@ TextureImporter:
   spriteMeshType: 1
   alignment: 0
   spritePivot: {x: 0.5, y: 0.5}
-  spritePixelsToUnits: 26
+  spritePixelsToUnits: 16
   spriteBorder: {x: 0, y: 0, z: 0, w: 0}
   spriteGenerateFallbackPhysicsShape: 1
   alphaUsage: 1
@@ -97,13 +97,13 @@ TextureImporter:
     serializedVersion: 2
     sprites:
     - serializedVersion: 2
-      name: Boss1_pattern3_0
+      name: Bosswalk_0
       rect:
         serializedVersion: 2
         x: 0
-        y: 553
-        width: 570
-        height: 276
+        y: 0
+        width: 204
+        height: 459
       alignment: 7
       pivot: {x: 0.5, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -112,20 +112,20 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: 6a142336547a10a41a3be7b75cd03fd9
-      internalID: 1282040947
+      spriteID: c78bcf1fad764124b9673cb2e056ef8c
+      internalID: -1314245169
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: Boss1_pattern3_1
+      name: Bosswalk_1
       rect:
         serializedVersion: 2
-        x: 0
-        y: 277
-        width: 570
-        height: 276
+        x: 204
+        y: 0
+        width: 204
+        height: 459
       alignment: 7
       pivot: {x: 0.5, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -134,20 +134,20 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: f60beaf5ed07b304aad275df23774926
-      internalID: -1040712987
+      spriteID: 15ffe97cc820a064f8b71377ebcf037f
+      internalID: -497245164
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: Boss1_pattern3_2
+      name: Bosswalk_2
       rect:
         serializedVersion: 2
-        x: 0
-        y: 1
-        width: 570
-        height: 276
+        x: 408
+        y: 0
+        width: 204
+        height: 459
       alignment: 7
       pivot: {x: 0.5, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -156,8 +156,52 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: c22f9a229cd066c46bbac187bcb3eaeb
-      internalID: 783702224
+      spriteID: bb6bb8e99f2555945b25aba7c2377058
+      internalID: 1042814483
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Bosswalk_3
+      rect:
+        serializedVersion: 2
+        x: 612
+        y: 0
+        width: 204
+        height: 459
+      alignment: 7
+      pivot: {x: 0.5, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: b490a96ac81fd4a4594fb2a089b9d3c1
+      internalID: 1201601234
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Bosswalk_4
+      rect:
+        serializedVersion: 2
+        x: 816
+        y: 0
+        width: 204
+        height: 459
+      alignment: 7
+      pivot: {x: 0.5, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 0dbf908a13c27db40b60344ec57d136b
+      internalID: -1151699035
       vertices: []
       indices: 
       edges: []
@@ -166,7 +210,7 @@ TextureImporter:
     customData: 
     physicsShape: []
     bones: []
-    spriteID: 6cd1923be4abc8245b57065a82010755
+    spriteID: a5c33519f4054cb46a676732de9bd162
     internalID: 0
     vertices: []
     indices: 
@@ -176,9 +220,11 @@ TextureImporter:
     spriteCustomMetadata:
       entries: []
     nameFileIdTable:
-      Boss1_pattern3_0: 1282040947
-      Boss1_pattern3_1: -1040712987
-      Boss1_pattern3_2: 783702224
+      Bosswalk_0: -1314245169
+      Bosswalk_1: -497245164
+      Bosswalk_2: 1042814483
+      Bosswalk_3: 1201601234
+      Bosswalk_4: -1151699035
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 
