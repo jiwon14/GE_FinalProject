@@ -72,16 +72,6 @@ public class F_PlayerController : MonoBehaviour
         }
     }
 
-    void OnTriggerEnter2D(Collider2D other)
-    {
-        // 보스의 찌르기 공격(트리거)에 맞았을 때
-        if (other.CompareTag("BossAttack"))
-        {
-            Debug.Log("🔪 보스의 공격 감지!");
-            HandleAttack(1, other.gameObject); // 데미지 1로 처리
-        }
-    }
-
     IEnumerator ParryRoutine()
     {
         canParry = false;
@@ -124,21 +114,16 @@ public class F_PlayerController : MonoBehaviour
         {
             Debug.Log("<b>[패링 성공! - 완벽한 방어]</b>");
 
-            // 공격자가 보스의 공격 판정(BossAttack)일 경우
-            if (attacker != null && attacker.CompareTag("BossAttack"))
+            // 공격자로부터 보스 컨트롤러를 가져옵니다.
+            F_BossController boss = attacker.GetComponent<F_BossController>();
+            if (boss != null)
             {
-                // 보스 컨트롤러를 가져와 스턴 함수를 호출합니다.
-                // F_BossController를 사용하도록 수정합니다.
-                F_BossController boss = attacker.GetComponentInParent<F_BossController>();
-                if (boss != null)
-                {
-                    // 패링 성공 시 반격 데미지
-                    int parryDamage = 10;
-                    boss.TakeDamage(parryDamage);
+                // 패링 성공 시 반격 데미지
+                int parryDamage = 10;
+                boss.TakeDamage(parryDamage);
 
-                    boss.GetStunned();
-                    Debug.Log("보스를 스턴시킵니다!");
-                }
+                boss.GetStunned();
+                Debug.Log("보스를 스턴시킵니다!");
             }
         }
         // 2. 패링 실패 (늦었거나 안 눌렀을 때)

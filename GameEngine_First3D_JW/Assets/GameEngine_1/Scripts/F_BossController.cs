@@ -23,6 +23,7 @@ public class F_BossController : MonoBehaviour
     public float moveSpeed = 2f;         // 이동 속도
     public float chargeSpeed = 8f;       // 돌진 속도
     public float actionCooldown = 1.5f;    // 행동과 행동 사이의 대기 시간
+    public GameObject normalAttackHitbox; // 일반 공격 판정 (Inspector에서 할당)
     public GameObject pierceAttackHitbox; // 전방 찌르기 공격 판정 (Inspector에서 할당)
     private Rigidbody2D rb;
     private SpriteRenderer spriteRenderer;
@@ -54,6 +55,8 @@ public class F_BossController : MonoBehaviour
             Debug.LogError("플레이어 Transform이 BossController에 할당되지 않았습니다!");
         }
 
+        // 모든 공격 판정을 시작할 때 비활성화합니다.
+        if (normalAttackHitbox != null) normalAttackHitbox.SetActive(false);
         // 찌르기 공격 판정을 시작할 때 비활성화합니다.
         if (pierceAttackHitbox != null)
         {
@@ -207,27 +210,6 @@ public class F_BossController : MonoBehaviour
 
     // --- 패링 및 스턴 로직 ---
 
-    // 근접 공격을 수행하고 플레이어에게 데미지를 시도하는 함수
-    void PerformMeleeAttack(int damage, float attackRange)
-    {
-        // 공격 순간에 스턴 상태면 데미지를 주지 않습니다.
-        if (currentState == BossState.Stunned) return;
-
-        // 지정된 범위 내의 모든 'Player' 레이어를 가진 콜라이더를 찾습니다.
-        Collider2D[] hitPlayers = Physics2D.OverlapCircleAll(transform.position, attackRange, LayerMask.GetMask("Player"));
-
-        foreach (Collider2D playerCollider in hitPlayers)
-        {
-            Debug.Log("근접 공격이 플레이어에게 적중!");
-            F_PlayerController pc = playerCollider.GetComponent<F_PlayerController>();
-            if (pc != null)
-            {
-                // 플레이어의 HandleAttack 함수를 호출하여 패링 여부 판단을 위임합니다.
-                pc.HandleAttack(damage, gameObject);
-            }
-        }
-    }
-
     // 데미지를 받는 함수 (외부에서 호출 가능)
     public void TakeDamage(int damage)
     {
@@ -277,7 +259,10 @@ public class F_BossController : MonoBehaviour
     public void AnimationEvent_PerformNormalAttack()
     {
         Debug.Log("애니메이션 이벤트: 일반 공격 실행");
-        PerformMeleeAttack(1, 2.0f);
+        if (normalAttackHitbox != null)
+        {
+            normalAttackHitbox.SetActive(true);
+        }
     }
 
     // 강한 공격 (Attack 3) - 돌진 시작
@@ -301,6 +286,7 @@ public class F_BossController : MonoBehaviour
     public void AnimationEvent_AttackFinished()
     {
         Debug.Log("애니메이션 이벤트: 공격 종료, 결정 상태로 복귀");
+        AnimationEvent_DeactivateAllHitboxes(); // 모든 히트박스 비활성화
         animator.SetInteger(AttackAnimID, 0); // 파라미터를 0으로 리셋하여 Any State로 돌아갈 준비
         animator.SetBool(IsWalkingAnimID, false); // Idle 상태로 돌아가도록 걷기 애니메이션을 중지합니다.
 
@@ -311,6 +297,15 @@ public class F_BossController : MonoBehaviour
             lastActionTime = Time.time; // 공격이 끝난 시점부터 쿨타임 계산 시작
             SetState(BossState.Deciding);
         }
+    }
+
+    // 모든 활성화된 히트박스를 끄는 함수
+    public void AnimationEvent_DeactivateAllHitboxes()
+    {
+        if (normalAttackHitbox != null && normalAttackHitbox.activeSelf)
+            normalAttackHitbox.SetActive(false);
+        if (pierceAttackHitbox != null && pierceAttackHitbox.activeSelf)
+            pierceAttackHitbox.SetActive(false);
     }
 
     // 강한 공격(돌진) 로직을 위한 코루틴
