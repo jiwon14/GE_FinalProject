@@ -22,13 +22,14 @@ public class F_BossController : MonoBehaviour
     [SerializeField] private int health = 50;  // 보스 체력
     public float moveSpeed = 2f;         // 이동 속도
     public float chargeSpeed = 8f;       // 돌진 속도
-    public float actionCooldown = 2f;    // 행동과 행동 사이의 대기 시간
+    public float actionCooldown = 1.5f;    // 행동과 행동 사이의 대기 시간
     public GameObject pierceAttackHitbox; // 전방 찌르기 공격 판정 (Inspector에서 할당)
     private Rigidbody2D rb;
     private SpriteRenderer spriteRenderer;
     private BossState currentState = BossState.Idle;
 
     private bool isPlayerInTrackingRange = false; // 플레이어 감지 여부
+    private bool isPlayerInAttackRange = false;   // 플레이어 공격 범위 감지 여부
     private float lastActionTime = 0f;            // 마지막 행동 시간
     private Color originalColor;                  // 원래 스프라이트 색상
 
@@ -36,6 +37,10 @@ public class F_BossController : MonoBehaviour
     private CapsuleCollider2D capsuleCollider;    // 보스의 메인 콜라이더
     private Vector2 moveDirection = Vector2.zero; // FixedUpdate에서 사용할 이동 방향
     private Animator animator;
+
+    // 애니메이터 파라미터 ID (성능 최적화)
+    private readonly int AttackAnimID = Animator.StringToHash("AttackAnimID");
+    private readonly int IsWalkingAnimID = Animator.StringToHash("isWalking");
     void Awake()
     {
         rb = GetComponent<Rigidbody2D>();
@@ -78,6 +83,7 @@ public class F_BossController : MonoBehaviour
                 if (!isPlayerInTrackingRange)
                 {
                     moveDirection = Vector2.zero; // 이동 중지
+                    animator.SetBool(IsWalkingAnimID, false);
                     SetState(BossState.Idle);
                     break;
                 }
@@ -85,16 +91,25 @@ public class F_BossController : MonoBehaviour
                 // 플레이어를 향해 계속 이동합니다.
                 if (playerTransform != null)
                 {
+                    // 이동 방향을 계산하고 걷기 애니메이션을 재생합니다.
                     float directionToPlayer = (playerTransform.position.x > transform.position.x) ? 1f : -1f;
                     moveDirection.x = directionToPlayer;
+                    animator.SetBool(IsWalkingAnimID, true);
                 }
 
-                // 마지막 행동 후 일정 시간이 지났다면 다음 행동을 결정합니다.
-                if (Time.time >= lastActionTime + actionCooldown)
+                // 플레이어가 공격 범위 안에 있고, 쿨타임이 지났다면 공격을 시도합니다.
+                // 플레이어가 공격 범위 안에 있을 때만 공격을 시도합니다.
+                if (isPlayerInAttackRange && Time.time >= lastActionTime + actionCooldown)
                 {
                     DecideNextAction();
                 }
                 break;
+        }
+        
+        // 공격 중일 때는 이동 방향을 강제로 0으로 설정합니다.
+        if (currentState == BossState.Attacking)
+        {
+            moveDirection = Vector2.zero;
         }
 
         // 플레이어를 바라보도록 방향 전환 (Idle 상태가 아닐 때만)
@@ -107,11 +122,9 @@ public class F_BossController : MonoBehaviour
     // 물리 계산은 FixedUpdate에서 처리합니다.
     void FixedUpdate()
     {
-        // 'Deciding' 또는 'Moving' 상태일 때만 이동 로직을 실행합니다.
-        if (currentState == BossState.Deciding || currentState == BossState.Moving)
-        {
+        // 스턴 상태가 아닐 때, 계산된 이동 방향(moveDirection)에 따라 물리적 속도를 적용합니다.
+        if (currentState != BossState.Stunned)
             rb.linearVelocity = new Vector2(moveDirection.x * moveSpeed, rb.linearVelocity.y);
-        }
     }
 
     // 상태를 변경하고 로그를 출력하는 함수
@@ -127,10 +140,13 @@ public class F_BossController : MonoBehaviour
     // 플레이어를 바라보는 함수
     void FacePlayer()
     {
+        // 떨림 현상을 방지하기 위한 데드존(Dead Zone) 설정
+        float deadZone = 0.2f;
+
         // 플레이어가 보스의 왼쪽에 있을 때 (원본 스프라이트가 왼쪽을 본다고 가정)
-        if (playerTransform.position.x < transform.position.x)
+        if (playerTransform.position.x < transform.position.x - deadZone)
         {
-            spriteRenderer.flipX = false; // 스프라이트를 뒤집지 않는다 (왼쪽)
+            spriteRenderer.flipX = true; // 왼쪽을 보도록 스프라이트 뒤집기
             if (pierceAttackHitbox != null)
             {
                 // 히트박스를 왼쪽으로 (초기 x 위치의 절댓값에 -를 붙여 항상 왼쪽을 보장)
@@ -140,9 +156,9 @@ public class F_BossController : MonoBehaviour
                     pierceHitboxInitialLocalPos.z);
             }
         }
-        else // 플레이어가 보스의 오른쪽에 있을 때
+        else if (playerTransform.position.x > transform.position.x + deadZone) // 플레이어가 보스의 오른쪽에 있을 때
         {
-            spriteRenderer.flipX = true; // 스프라이트를 뒤집는다 (오른쪽)
+            spriteRenderer.flipX = false; // 오른쪽을 보도록 스프라이트 원상복구
             if (pierceAttackHitbox != null)
             {
                 // 히트박스를 오른쪽으로 (초기 x 위치의 절댓값을 사용해 항상 오른쪽을 보장)
@@ -152,133 +168,41 @@ public class F_BossController : MonoBehaviour
                     pierceHitboxInitialLocalPos.z);
             }
         }
+        // 플레이어가 deadZone 안에 있을 경우, 방향을 바꾸지 않고 현재 상태를 유지합니다.
     }
     // 다음 행동을 무작위로 결정하는 함수
     void DecideNextAction()
     {
+        // 상태를 먼저 Attacking으로 변경하여 중복 호출을 방지합니다.
+        SetState(BossState.Attacking);
+        
         moveDirection = Vector2.zero; // 공격 전 잠시 멈춤
-        int actionChoice = Random.Range(0, 3); // 0: 일반 공격, 1: 강한 공격, 2: 찌르기 공격
+        animator.SetBool(IsWalkingAnimID, false); // 공격 시작 전 걷기 애니메이션 중지
 
-        switch (actionChoice)
-        {
-            case 0:
-                StartCoroutine(AttackRoutine());
-                break;
-            case 1:
-                StartCoroutine(StrongAttackRoutine());
-                break;
-            case 2:
-                StartCoroutine(PierceRoutine());
-                break;
-        }
-        lastActionTime = Time.time; // 마지막 행동 시간 기록
+        // 1: 일반공격, 2: 찌르기공격, 3: 강한공격
+        int actionChoice = Random.Range(1, 4); 
+        animator.SetInteger(AttackAnimID, actionChoice);
+
     }
 
     // --- 행동 패턴 구현 (코루틴) ---
-
-    // 2. 일반 공격 행동
     private IEnumerator AttackRoutine()
     {
-        SetState(BossState.Attacking);
-
-        // 공격 예고 (빨간색으로 변경)
-        spriteRenderer.color = Color.red;
-
-        yield return new WaitForSeconds(0.4f); // 예고 동작 대기
-        PerformMeleeAttack(1, 2.0f); // 범위 2.0f의 근접 공격 실행
-
-        yield return new WaitForSeconds(0.4f); // 공격 후 대기
-        spriteRenderer.color = originalColor; // 원래 색으로 복구
-
-        // 코루틴 종료 시점에 직접 다음 이동 방향을 설정해줍니다.
-        if (playerTransform != null)
-        {
-            moveDirection.x = (playerTransform.position.x > transform.position.x) ? 1f : -1f;
-        }
-
-        SetState(BossState.Deciding); // 다시 결정 상태로
+        // 이 코루틴은 이제 애니메이션 이벤트로 대체되므로 사용하지 않습니다.
+        // 필요 시 유지할 수 있으나, 현재 로직에서는 제거해도 무방합니다.
+        yield return null;
     }
 
-    // 3. 강한 공격 행동
     private IEnumerator StrongAttackRoutine()
     {
-        SetState(BossState.StrongAttacking);
-
-        // 3-1. 공격 예고 (애니메이션 재생)
-        animator.SetTrigger("StrongAttack"); // "StrongAttack" 애니메이션 트리거
-        yield return new WaitForSeconds(0.7f); // 0.7초 예고 동작
-
-        // 3-2. 뒤로 짧게 물러나기
-        float directionToPlayer = (playerTransform.position.x > transform.position.x) ? 1f : -1f;
-        rb.linearVelocity = new Vector2(-directionToPlayer * moveSpeed, 0);
-        yield return new WaitForSeconds(0.4f); // 0.4초 동안 뒤로 이동
-
-        // 3-3. 플레이어 방향으로 돌진
-        rb.linearVelocity = new Vector2(directionToPlayer * chargeSpeed, 0);
-
-        // 3-4. 돌진하는 동안 매 프레임 충돌을 감지
-        float chargeDuration = 0.8f;
-        float chargeTimer = 0f;
-        bool hasHit = false; // 돌진 중 한 번만 피격되도록 처리
-
-        while (chargeTimer < chargeDuration)
-        {
-            if (!hasHit) // 아직 공격이 적중하지 않았을 때만 판정
-            {
-                // 보스의 캡슐 콜라이더와 겹치는 플레이어를 찾습니다.
-                ContactFilter2D filter = new ContactFilter2D().NoFilter();
-                filter.SetLayerMask(LayerMask.GetMask("Player")); // 플레이어 레이어만 감지하도록 필터 설정
-                Collider2D[] hitPlayers = new Collider2D[1];
-                int hitCount = capsuleCollider.Overlap(filter, hitPlayers);
-
-                if (hitCount > 0)
-                {
-                    Collider2D playerCollider = hitPlayers[0];
-                    Debug.Log("돌진 공격이 플레이어에게 적중!");
-                    playerCollider.GetComponent<F_PlayerController>()?.HandleAttack(2, gameObject);
-                    hasHit = true; // 공격이 적중했음을 표시
-                }
-            }
-            chargeTimer += Time.deltaTime;
-            yield return null; // 다음 프레임까지 대기
-        }
-
-        // 3-5. 돌진 후 정지 및 원상 복구
-        rb.linearVelocity = Vector2.zero;
-
-        // 코루틴 종료 시점에 직접 다음 이동 방향을 설정해줍니다.
-        if (playerTransform != null)
-        {
-            moveDirection.x = (playerTransform.position.x > transform.position.x) ? 1f : -1f;
-        }
-
-        SetState(BossState.Deciding); // 다시 결정 상태로
+        // 이 코루틴은 이제 애니메이션 이벤트로 대체되므로 사용하지 않습니다.
+        yield return null;
     }
 
-    // 4. 전방 찌르기 행동
     private IEnumerator PierceRoutine()
     {
-        SetState(BossState.Piercing);
-
-        spriteRenderer.color = Color.black; // 색을 검은색으로 변경
-        yield return new WaitForSeconds(0.5f); // 0.5초 공격 준비
-
-        // 공격 판정 활성화
-        if (pierceAttackHitbox != null) pierceAttackHitbox.SetActive(true);
-
-        yield return new WaitForSeconds(0.3f); // 0.3초 동안 공격 판정 유지
-
-        // 공격 판정 비활성화 및 원상 복구
-        if (pierceAttackHitbox != null) pierceAttackHitbox.SetActive(false);
-        spriteRenderer.color = originalColor;
-
-        // 코루틴 종료 시점에 직접 다음 이동 방향을 설정해줍니다.
-        if (playerTransform != null)
-        {
-            moveDirection.x = (playerTransform.position.x > transform.position.x) ? 1f : -1f;
-        }
-
-        SetState(BossState.Deciding); // 다시 결정 상태로
+        // 이 코루틴은 이제 애니메이션 이벤트로 대체되므로 사용하지 않습니다.
+        yield return null;
     }
 
     // --- 패링 및 스턴 로직 ---
@@ -347,25 +271,104 @@ public class F_BossController : MonoBehaviour
         SetState(BossState.Deciding); // 다시 행동 결정 상태로 돌아갑니다.
     }
 
-    // --- 플레이어 감지 로직 ---
+    // --- 애니메이션 이벤트 호출 함수들 ---
 
-    // 자식 오브젝트의 Trigger에 플레이어가 들어왔을 때
-    void OnTriggerEnter2D(Collider2D other)
+    // 일반 공격 (Attack 1)
+    public void AnimationEvent_PerformNormalAttack()
     {
-        if (other.CompareTag("Player"))
+        Debug.Log("애니메이션 이벤트: 일반 공격 실행");
+        PerformMeleeAttack(1, 2.0f);
+    }
+
+    // 강한 공격 (Attack 3) - 돌진 시작
+    public void AnimationEvent_StartCharge()
+    {
+        Debug.Log("애니메이션 이벤트: 돌진 시작");
+        StartCoroutine(ChargeRoutine());
+    }
+
+    // 찌르기 공격 (Attack 2) - 히트박스 제어
+    public void AnimationEvent_SetPierceHitbox(int active)
+    {
+        Debug.Log($"애니메이션 이벤트: 찌르기 히트박스 {(active == 1 ? "활성화" : "비활성화")}");
+        if (pierceAttackHitbox != null)
         {
-            isPlayerInTrackingRange = true;
-            Debug.Log("플레이어 감지!");
+            pierceAttackHitbox.SetActive(active == 1);
         }
     }
 
-    // 자식 오브젝트의 Trigger에서 플레이어가 나갔을 때
-    void OnTriggerExit2D(Collider2D other)
+    // 모든 공격 애니메이션의 끝에서 호출될 함수
+    public void AnimationEvent_AttackFinished()
     {
-        if (other.CompareTag("Player"))
+        Debug.Log("애니메이션 이벤트: 공격 종료, 결정 상태로 복귀");
+        animator.SetInteger(AttackAnimID, 0); // 파라미터를 0으로 리셋하여 Any State로 돌아갈 준비
+        animator.SetBool(IsWalkingAnimID, false); // Idle 상태로 돌아가도록 걷기 애니메이션을 중지합니다.
+
+        // 공격이 끝났으므로 다음 행동을 결정하는 상태로 전환합니다.
+        // 단, 스턴 상태가 아닐 때만 Deciding으로 돌아갑니다. (스턴 중단 시 예외 처리)
+        if (currentState != BossState.Stunned)
         {
-            isPlayerInTrackingRange = false;
-            Debug.Log("플레이어가 감지 범위를 벗어남!");
+            lastActionTime = Time.time; // 공격이 끝난 시점부터 쿨타임 계산 시작
+            SetState(BossState.Deciding);
         }
+    }
+
+    // 강한 공격(돌진) 로직을 위한 코루틴
+    private IEnumerator ChargeRoutine()
+    {
+        float directionToPlayer = (playerTransform.position.x > transform.position.x) ? 1f : -1f;
+        rb.linearVelocity = new Vector2(directionToPlayer * chargeSpeed, 0);
+
+        float chargeDuration = 0.8f;
+        float chargeTimer = 0f;
+        bool hasHit = false;
+
+        while (chargeTimer < chargeDuration)
+        {
+            if (!hasHit)
+            {
+                ContactFilter2D filter = new ContactFilter2D().NoFilter();
+                filter.SetLayerMask(LayerMask.GetMask("Player"));
+                Collider2D[] hitPlayers = new Collider2D[1];
+                if (capsuleCollider.Overlap(filter, hitPlayers) > 0)
+                {
+                    Debug.Log("돌진 공격이 플레이어에게 적중!");
+                    hitPlayers[0].GetComponent<F_PlayerController>()?.HandleAttack(2, gameObject);
+                    hasHit = true;
+                }
+            }
+            chargeTimer += Time.deltaTime;
+            yield return null;
+        }
+        rb.linearVelocity = Vector2.zero;
+    }
+
+    // --- 플레이어 감지 로직 ---
+
+    // 외부(자식 Trigger)에서 호출될 함수들
+    public void OnPlayerEnterTrackingRange()
+    {
+        isPlayerInTrackingRange = true;
+        Debug.Log("플레이어 추적 시작!");
+    }
+
+    public void OnPlayerExitTrackingRange()
+    {
+        isPlayerInTrackingRange = false;
+        // 공격 범위에서도 벗어난 것으로 간주합니다.
+        isPlayerInAttackRange = false;
+        Debug.Log("플레이어가 추적 범위를 벗어남!");
+    }
+
+    public void OnPlayerEnterAttackRange()
+    {
+        isPlayerInAttackRange = true;
+        Debug.Log("<color=yellow>플레이어 공격 범위 진입!</color>");
+    }
+
+    public void OnPlayerExitAttackRange()
+    {
+        isPlayerInAttackRange = false;
+        Debug.Log("플레이어가 공격 범위를 벗어남.");
     }
 }

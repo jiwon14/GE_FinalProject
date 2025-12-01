@@ -31,12 +31,12 @@ public class F_PlayerController : MonoBehaviour
         float moveX = 0f;
         if (Input.GetKey(KeyCode.A))
         {
-            sp.flipX = true;
+            sp.flipX = false;
             moveX = -1f;
         }
         if (Input.GetKey(KeyCode.D))
         {
-            sp.flipX = false;
+            sp.flipX = true;
             moveX = 1f;
         }
 
