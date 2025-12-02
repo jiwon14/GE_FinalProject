@@ -919,7 +919,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   moveSpeed: 10
-  jumpForce: 20
+  jumpForce: 15
   parryWindow: 0.3
   parryCooldown: 1
 --- !u!1 &1538097716
