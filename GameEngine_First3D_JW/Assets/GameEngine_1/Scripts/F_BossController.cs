@@ -11,7 +11,7 @@ public class F_BossController : MonoBehaviour
         Moving,     // 좌우로 움직이는 중
         Attacking,  // 일반 공격 중
         StrongAttacking, // 강한 공격 중
-        Piercing,    // 찌르기 공격 중
+        Piercing,   // 찌르기 공격 중 (뒤로 물러나고 돌진하는 움직임 포함)
         Stunned     // 패링 당해서 기절한 상태
     }
 
@@ -25,6 +25,13 @@ public class F_BossController : MonoBehaviour
     public float actionCooldown = 1.5f;    // 행동과 행동 사이의 대기 시간
     public GameObject normalAttackHitbox; // 일반 공격 판정 (Inspector에서 할당)
     public GameObject pierceAttackHitbox; // 전방 찌르기 공격 판정 (Inspector에서 할당)
+
+    [Header("찌르기 공격 (Attack 2) 설정")]
+    public float pierceBackwardDistance = 1.0f; // 찌르기 전 뒤로 물러나는 거리
+    public float pierceBackwardSpeed = 3.0f;    // 찌르기 전 뒤로 물러나는 속도
+    public float pierceForwardDistance = 3.0f;  // 찌르기 시 앞으로 돌진하는 거리 (뒤로 물러난 지점부터)
+    public float pierceForwardSpeed = 10.0f;    // 찌르기 시 앞으로 돌진하는 속도
+    public float pierceBackwardPause = 0.2f;    // 뒤로 물러난 후 잠시 멈추는 시간
     private Rigidbody2D rb;
     private SpriteRenderer spriteRenderer;
     private BossState currentState = BossState.Idle;
@@ -33,7 +40,6 @@ public class F_BossController : MonoBehaviour
     private bool isPlayerInAttackRange = false;   // 플레이어 공격 범위 감지 여부
     private float lastActionTime = 0f;            // 마지막 행동 시간
     private Color originalColor;                  // 원래 스프라이트 색상
-
     private Vector3 pierceHitboxInitialLocalPos;  // 찌르기 히트박스의 초기 로컬 위치
     private CapsuleCollider2D capsuleCollider;    // 보스의 메인 콜라이더
     private Vector2 moveDirection = Vector2.zero; // FixedUpdate에서 사용할 이동 방향
@@ -110,7 +116,7 @@ public class F_BossController : MonoBehaviour
         }
         
         // 공격 중일 때는 이동 방향을 강제로 0으로 설정합니다.
-        if (currentState == BossState.Attacking)
+        if (currentState == BossState.Attacking || currentState == BossState.Piercing) // 찌르기 공격 중에도 이동 중지
         {
             moveDirection = Vector2.zero;
         }
@@ -118,7 +124,7 @@ public class F_BossController : MonoBehaviour
         // 플레이어를 바라보도록 방향 전환 (Idle 상태가 아닐 때만)
         if (currentState != BossState.Idle && playerTransform != null)
         {
-            FacePlayer();
+            if (currentState != BossState.Piercing) FacePlayer(); // 찌르기 공격 중에는 방향 고정
         }
     }
 
@@ -185,6 +191,11 @@ public class F_BossController : MonoBehaviour
         // 1: 일반공격, 2: 찌르기공격, 3: 강한공격
         int actionChoice = Random.Range(1, 4); 
         animator.SetInteger(AttackAnimID, actionChoice);
+
+        if (actionChoice == 2) // 찌르기 공격일 경우, 움직임 코루틴 시작
+        {
+            StartCoroutine(PierceAttackMovementRoutine());
+        }
 
     }
 
@@ -336,6 +347,53 @@ public class F_BossController : MonoBehaviour
             yield return null;
         }
         rb.linearVelocity = Vector2.zero;
+    }
+
+    // 찌르기 공격의 움직임을 처리하는 코루틴
+    private IEnumerator PierceAttackMovementRoutine()
+    {
+        SetState(BossState.Piercing); // 찌르기 상태로 전환
+        rb.linearVelocity = Vector2.zero; // 움직임 시작 전 정지
+
+        // 현재 보스가 바라보는 방향을 기준으로 움직임 방향 결정
+        float direction = spriteRenderer.flipX ? -1f : 1f; // -1: 왼쪽, 1: 오른쪽
+
+        // --- 1. 뒤로 물러나기 ---
+        float backwardMoveDuration = pierceBackwardDistance / pierceBackwardSpeed;
+        float timer = 0f;
+        Vector2 initialPosition = transform.position;
+        Vector2 targetBackwardPosition = initialPosition + new Vector2(-direction * pierceBackwardDistance, 0);
+
+        while (timer < backwardMoveDuration)
+        {
+            // 뒤로 물러나는 속도로 이동
+            rb.linearVelocity = new Vector2(-direction * pierceBackwardSpeed, rb.linearVelocity.y);
+            timer += Time.deltaTime;
+            yield return null;
+        }
+        rb.linearVelocity = Vector2.zero; // 정지
+        transform.position = targetBackwardPosition; // 정확한 위치 보정
+
+        // --- 2. 잠시 멈춤 ---
+        yield return new WaitForSeconds(pierceBackwardPause);
+
+        // --- 3. 앞으로 돌진하기 ---
+        float forwardChargeDuration = pierceForwardDistance / pierceForwardSpeed;
+        timer = 0f;
+        Vector2 targetForwardPosition = targetBackwardPosition + new Vector2(direction * pierceForwardDistance, 0);
+
+        while (timer < forwardChargeDuration)
+        {
+            // 앞으로 돌진하는 속도로 이동
+            rb.linearVelocity = new Vector2(direction * pierceForwardSpeed, rb.linearVelocity.y);
+            timer += Time.deltaTime;
+            yield return null;
+        }
+        rb.linearVelocity = Vector2.zero; // 정지
+        transform.position = targetForwardPosition; // 정확한 위치 보정
+
+        // 애니메이션이 끝날 때 AnimationEvent_AttackFinished()가 호출되어 상태를 Deciding으로 되돌리고 히트박스를 비활성화합니다.
+        // 따라서 이 코루틴에서는 별도의 상태 변경이나 히트박스 제어를 하지 않습니다.
     }
 
     // --- 플레이어 감지 로직 ---
