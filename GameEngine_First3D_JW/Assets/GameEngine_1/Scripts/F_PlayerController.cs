@@ -27,17 +27,23 @@ public class F_PlayerController : MonoBehaviour
 
     void Update()
     {
-        // 좌우 이동
-        float moveX = 0f;
-        if (Input.GetKey(KeyCode.A))
+        // 패링 중일 때는 움직임 및 기타 입력을 막음
+        if (isParrying)
         {
-            sp.flipX = false;
-            moveX = -1f;
+            return;
         }
-        if (Input.GetKey(KeyCode.D))
+
+        // 1. 좌우 이동 (오직 화살표 키만 사용)
+        float moveX = 0f;
+        if (Input.GetKey(KeyCode.LeftArrow)) // 왼쪽 화살표
         {
+            moveX = -1f;
             sp.flipX = true;
+        }
+        else if (Input.GetKey(KeyCode.RightArrow)) // 오른쪽 화살표
+        {
             moveX = 1f;
+            sp.flipX = false;
         }
 
         rb.linearVelocity = new Vector2(moveX * moveSpeed, rb.linearVelocity.y);
@@ -48,8 +54,8 @@ public class F_PlayerController : MonoBehaviour
             rb.linearVelocity = new Vector2(rb.linearVelocity.x, jumpForce);
         }
 
-        // 패링 입력 ('F' 키)
-        if (Input.GetKeyDown(KeyCode.F) && canParry)
+        // 패링 입력 ('D' 키)
+        if (Input.GetKeyDown(KeyCode.D) && canParry)
         {
             StartCoroutine(ParryRoutine());
         }
@@ -76,6 +82,7 @@ public class F_PlayerController : MonoBehaviour
     {
         canParry = false;
         isParrying = true;
+        rb.linearVelocity = Vector2.zero; // 패링 입력 시 그 자리에 멈춤
 
         Color originalColor = sp.color;
         sp.color = Color.yellow; // 패링 중일 때 노란색으로 변경
@@ -130,7 +137,7 @@ public class F_PlayerController : MonoBehaviour
         else
         {
             Debug.Log("패링 실패 - 플레이어 피격");
-            GameManager gameManager = FindFirstObjectByType<GameManager>();
+            F_GameManager gameManager = FindFirstObjectByType<F_GameManager>();
             if (gameManager != null)
             {
                 gameManager.TakeDamage(damage); // 플레이어 데미지

@@ -23,6 +23,7 @@ public class F_BossController : MonoBehaviour
     public float moveSpeed = 2f;         // 이동 속도
     public float chargeSpeed = 8f;       // 돌진 속도
     public float actionCooldown = 1.5f;    // 행동과 행동 사이의 대기 시간
+    [SerializeField] private float stoppingDistance = 2.0f; // 이 거리 안으로 들어오면 추적을 멈춥니다.
     public GameObject normalAttackHitbox; // 일반 공격 판정 (Inspector에서 할당)
     public GameObject pierceAttackHitbox; // 전방 찌르기 공격 판정 (Inspector에서 할당)
 
@@ -44,10 +45,15 @@ public class F_BossController : MonoBehaviour
     private CapsuleCollider2D capsuleCollider;    // 보스의 메인 콜라이더
     private Vector2 moveDirection = Vector2.zero; // FixedUpdate에서 사용할 이동 방향
     private Animator animator;
+    
+    // 방향 전환 딜레이 관련 변수
+    private float timeToSwitchDirection = 0.2f; // 이 시간 동안 플레이어가 반대편에 있어야 방향 전환
+    private float directionSwitchTimer = 0f;
 
     // 애니메이터 파라미터 ID (성능 최적화)
     private readonly int AttackAnimID = Animator.StringToHash("AttackAnimID");
     private readonly int IsWalkingAnimID = Animator.StringToHash("isWalking");
+    private readonly int StunAnimID = Animator.StringToHash("Stun");
     void Awake()
     {
         rb = GetComponent<Rigidbody2D>();
@@ -100,10 +106,19 @@ public class F_BossController : MonoBehaviour
                 // 플레이어를 향해 계속 이동합니다.
                 if (playerTransform != null)
                 {
-                    // 이동 방향을 계산하고 걷기 애니메이션을 재생합니다.
-                    float directionToPlayer = (playerTransform.position.x > transform.position.x) ? 1f : -1f;
-                    moveDirection.x = directionToPlayer;
-                    animator.SetBool(IsWalkingAnimID, true);
+                    float distanceToPlayerX = playerTransform.position.x - transform.position.x;
+
+                    // 플레이어와의 거리가 stoppingDistance보다 멀 때만 이동합니다.
+                    if (Mathf.Abs(distanceToPlayerX) > stoppingDistance)
+                    {
+                        moveDirection.x = Mathf.Sign(distanceToPlayerX);
+                        animator.SetBool(IsWalkingAnimID, true);
+                    }
+                    else
+                    {
+                        moveDirection.x = 0; // 거리가 가까우면 이동을 멈춥니다.
+                        animator.SetBool(IsWalkingAnimID, false);
+                    }
                 }
 
                 // 플레이어가 공격 범위 안에 있고, 쿨타임이 지났다면 공격을 시도합니다.
@@ -124,14 +139,18 @@ public class F_BossController : MonoBehaviour
         // 플레이어를 바라보도록 방향 전환 (Idle 상태가 아닐 때만)
         if (currentState != BossState.Idle && playerTransform != null)
         {
-            if (currentState != BossState.Piercing) FacePlayer(); // 찌르기 공격 중에는 방향 고정
+            // 공격 중이 아닐 때(Moving, Deciding)만 플레이어를 바라보도록 하여, 공격 모션 중 방향이 바뀌는 어색함을 없앱니다.
+            if (currentState != BossState.Attacking && currentState != BossState.StrongAttacking && currentState != BossState.Piercing)
+            {
+                FacePlayer();
+            }
         }
     }
 
     // 물리 계산은 FixedUpdate에서 처리합니다.
     void FixedUpdate()
     {
-        // 스턴 상태가 아닐 때, 계산된 이동 방향(moveDirection)에 따라 물리적 속도를 적용합니다.
+        // 스턴 상태가 아닐 때만 이동합니다.
         if (currentState != BossState.Stunned)
             rb.linearVelocity = new Vector2(moveDirection.x * moveSpeed, rb.linearVelocity.y);
     }
@@ -149,35 +168,42 @@ public class F_BossController : MonoBehaviour
     // 플레이어를 바라보는 함수
     void FacePlayer()
     {
-        // 떨림 현상을 방지하기 위한 데드존(Dead Zone) 설정
-        float deadZone = 0.2f;
+        float directionToPlayer = playerTransform.position.x - transform.position.x;
+        bool shouldFaceRight = directionToPlayer > 0; // 플레이어가 오른쪽에 있는가?
+        bool isFacingRight = !spriteRenderer.flipX;   // 현재 오른쪽을 보고 있는가?
 
-        // 플레이어가 보스의 왼쪽에 있을 때 (원본 스프라이트가 왼쪽을 본다고 가정)
-        if (playerTransform.position.x < transform.position.x - deadZone)
+        // 현재 바라보는 방향과 플레이어의 방향이 다를 경우
+        if (isFacingRight != shouldFaceRight)
         {
-            spriteRenderer.flipX = true; // 왼쪽을 보도록 스프라이트 뒤집기
-            if (pierceAttackHitbox != null)
+            directionSwitchTimer += Time.deltaTime;
+
+            // 타이머가 설정된 시간을 초과하면 방향을 전환합니다.
+            if (directionSwitchTimer >= timeToSwitchDirection)
             {
-                // 히트박스를 왼쪽으로 (초기 x 위치의 절댓값에 -를 붙여 항상 왼쪽을 보장)
-                pierceAttackHitbox.transform.localPosition = new Vector3(
-                    -Mathf.Abs(pierceHitboxInitialLocalPos.x),
-                    pierceHitboxInitialLocalPos.y,
-                    pierceHitboxInitialLocalPos.z);
+                spriteRenderer.flipX = !spriteRenderer.flipX; // 방향 전환
+                UpdatePierceHitboxPosition();
+                directionSwitchTimer = 0f; // 타이머 리셋
             }
         }
-        else if (playerTransform.position.x > transform.position.x + deadZone) // 플레이어가 보스의 오른쪽에 있을 때
+        else
         {
-            spriteRenderer.flipX = false; // 오른쪽을 보도록 스프라이트 원상복구
-            if (pierceAttackHitbox != null)
-            {
-                // 히트박스를 오른쪽으로 (초기 x 위치의 절댓값을 사용해 항상 오른쪽을 보장)
-                pierceAttackHitbox.transform.localPosition = new Vector3(
-                    Mathf.Abs(pierceHitboxInitialLocalPos.x),
-                    pierceHitboxInitialLocalPos.y,
-                    pierceHitboxInitialLocalPos.z);
-            }
+            // 플레이어가 현재 바라보는 방향에 있다면 타이머를 리셋합니다.
+            directionSwitchTimer = 0f;
         }
-        // 플레이어가 deadZone 안에 있을 경우, 방향을 바꾸지 않고 현재 상태를 유지합니다.
+    }
+
+    // 찌르기 히트박스 위치를 현재 바라보는 방향에 맞게 업데이트하는 함수
+    void UpdatePierceHitboxPosition()
+    {
+        if (pierceAttackHitbox == null) return;
+
+        bool isFacingRight = !spriteRenderer.flipX;
+        float newX = isFacingRight ? Mathf.Abs(pierceHitboxInitialLocalPos.x) : -Mathf.Abs(pierceHitboxInitialLocalPos.x);
+
+        pierceAttackHitbox.transform.localPosition = new Vector3(
+            newX,
+            pierceHitboxInitialLocalPos.y,
+            pierceHitboxInitialLocalPos.z);
     }
     // 다음 행동을 무작위로 결정하는 함수
     void DecideNextAction()
@@ -243,25 +269,29 @@ public class F_BossController : MonoBehaviour
     // 외부(F_PlayerController)에서 호출될 스턴 함수
     public void GetStunned()
     {
-        // 이미 스턴 상태이거나, 패링이 불가능한 찌르기 공격 중에는 스턴에 걸리지 않습니다.
-        if (currentState == BossState.Stunned || currentState == BossState.Piercing) return;
+        // 이미 스턴 상태라면 아무것도 하지 않습니다.
+        if (currentState == BossState.Stunned) return;
 
         StopAllCoroutines(); // 진행 중인 모든 공격 행동을 즉시 중단합니다.
+
+        // 애니메이터의 공격 의도를 즉시 초기화하여 스턴 후 동일한 공격이 반복되는 것을 방지합니다.
+        animator.SetInteger(AttackAnimID, 0);
+
         StartCoroutine(StunRoutine());
     }
 
     private IEnumerator StunRoutine()
     {
         SetState(BossState.Stunned);
+        animator.SetTrigger(StunAnimID); // Stun 애니메이션 트리거 발동 (이 부분은 그대로 둡니다)
         rb.linearVelocity = Vector2.zero; // 물리적 움직임을 멈춥니다.
         Debug.Log("보스: 크윽... (스턴 상태)");
-        spriteRenderer.color = Color.cyan; // 스턴 상태를 시안 색으로 표시
 
-        yield return new WaitForSeconds(1.5f); // 1.5초 동안 스턴
+        // 기절 애니메이션이 끝날 때까지 기다립니다.
+        // 이 시간은 애니메이션 클립의 실제 길이와 일치시키는 것이 가장 좋습니다.
+        yield return new WaitForSeconds(1.5f); // 기절 애니메이션 길이에 맞춰 조정
 
-        spriteRenderer.color = originalColor; // 원래 색으로 복구
-        lastActionTime = Time.time; // 스턴이 풀린 직후 바로 공격하지 않도록 쿨타임을 초기화합니다.
-        SetState(BossState.Deciding); // 다시 행동 결정 상태로 돌아갑니다.
+        AnimationEvent_AttackFinished();
     }
 
     // --- 애니메이션 이벤트 호출 함수들 ---
@@ -303,11 +333,11 @@ public class F_BossController : MonoBehaviour
 
         // 공격이 끝났으므로 다음 행동을 결정하는 상태로 전환합니다.
         // 단, 스턴 상태가 아닐 때만 Deciding으로 돌아갑니다. (스턴 중단 시 예외 처리)
-        if (currentState != BossState.Stunned)
-        {
-            lastActionTime = Time.time; // 공격이 끝난 시점부터 쿨타임 계산 시작
-            SetState(BossState.Deciding);
-        }
+        // 스턴 상태에서 이 함수가 호출될 수 있으므로, 현재 상태를 확인합니다.
+        // 스턴 상태였거나, 다른 공격 상태였거나 모두 이 함수를 통해 Deciding 상태로 돌아갑니다.
+        animator.SetInteger(AttackAnimID, 0); // 파라미터를 0으로 리셋하여 기본 상태로 돌아갈 준비
+        lastActionTime = Time.time; // 행동이 끝난 시점부터 쿨타임 계산 시작
+        SetState(BossState.Deciding);
     }
 
     // 모든 활성화된 히트박스를 끄는 함수
