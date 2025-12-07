@@ -11,12 +11,13 @@ public class F_BossController : MonoBehaviour
 
     [Header("참조")]
     public Transform playerTransform; 
+    public BossHealthUI bossHealthUI; // 보스 체력바 UI 참조
 
     [Header("설정")]
     public bool spriteFacesLeft = true; 
 
     [Header("능력치")]
-    [SerializeField] private int health = 50;  
+    private BossHealth bossHealth; // BossHealth 참조로 변경
     public float moveSpeed = 2f;         
     public float chargeSpeed = 8f;       
     public float actionCooldown = 1.5f;    
@@ -65,9 +66,11 @@ public class F_BossController : MonoBehaviour
         spriteRenderer = GetComponent<SpriteRenderer>();
         audioSource = GetComponent<AudioSource>();
         animator = GetComponent<Animator>();
+        bossHealth = GetComponent<BossHealth>(); // BossHealth 컴포넌트 가져오기
         capsuleCollider = GetComponent<CapsuleCollider2D>();
 
         if (playerTransform == null) Debug.LogError("플레이어 Transform 미할당!");
+        if (bossHealthUI == null) Debug.LogError("BossHealthUI가 F_BossController에 할당되지 않았습니다!");
 
         if (normalAttackHitbox != null) normalAttackHitbox.SetActive(false);
         if (pierceAttackHitbox != null) pierceAttackHitbox.SetActive(false);
@@ -196,7 +199,7 @@ public class F_BossController : MonoBehaviour
     }
 
     // 사망 처리
-    private void Die()
+    public void Die() // BossHealth에서 호출할 수 있도록 public으로 변경
     {
         Debug.Log("보스가 쓰러졌습니다!");
         SetState(BossState.Dead); 
@@ -272,11 +275,11 @@ public class F_BossController : MonoBehaviour
 
     public void TakeDamage(int damage)
     {
-        if (currentState == BossState.Dead) return; // 시체 부관참시 방지
+        if (currentState == BossState.Dead) return;
 
-        health -= damage;
-        Debug.Log($"<color=red>보스 피격! 남은 체력: {health}</color>");
-        if (health <= 0) Die();
+        // BossHealth 컴포넌트에 데미지 처리를 위임합니다.
+        bossHealth.TakeDamage(damage);
+        Debug.Log($"<color=red>보스 피격! 데미지: {damage}</color>");
     }
     
     public void GetStunned()
@@ -363,7 +366,13 @@ public class F_BossController : MonoBehaviour
         rb.linearVelocity = Vector2.zero; 
     }
 
-    public void OnPlayerEnterTrackingRange() { isPlayerInTrackingRange = true; }
+    public void OnPlayerEnterTrackingRange() 
+    { 
+        isPlayerInTrackingRange = true;
+        // 플레이어가 추적 범위에 들어오면 체력바를 표시합니다.
+        if (bossHealthUI != null) bossHealthUI.Show();
+    }
+
     public void OnPlayerExitTrackingRange() { isPlayerInTrackingRange = false; isPlayerInAttackRange = false; }
     public void OnPlayerEnterAttackRange() { isPlayerInAttackRange = true; }
     public void OnPlayerExitAttackRange() { isPlayerInAttackRange = false; }
