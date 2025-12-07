@@ -1,7 +1,8 @@
 using System.Collections;
 using UnityEngine;
 
-public class F_BossController : MonoBehaviour
+[RequireComponent(typeof(AudioSource))] // AudioSource 컴포넌트가 항상 있도록 강제합니다.
+public class F_BossController : MonoBehaviour 
 {
     // 보스의 행동 상태를 정의합니다.
     private enum BossState
@@ -27,6 +28,12 @@ public class F_BossController : MonoBehaviour
     public GameObject normalAttackHitbox; // 일반 공격 판정 (Inspector에서 할당)
     public GameObject pierceAttackHitbox; // 전방 찌르기 공격 판정 (Inspector에서 할당)
 
+    [Header("사운드")]
+    public AudioClip normalAttackSound; // 일반 공격 사운드
+    public AudioClip strongAttackSound; // 강한 공격(돌진) 사운드
+    public AudioClip pierceAttackSound; // 찌르기 공격 사운드
+
+
     [Header("찌르기 공격 (Attack 2) 설정")]
     public float pierceBackwardDistance = 1.0f; // 찌르기 전 뒤로 물러나는 거리
     public float pierceBackwardSpeed = 3.0f;    // 찌르기 전 뒤로 물러나는 속도
@@ -35,6 +42,7 @@ public class F_BossController : MonoBehaviour
     public float pierceBackwardPause = 0.2f;    // 뒤로 물러난 후 잠시 멈추는 시간
     private Rigidbody2D rb;
     private SpriteRenderer spriteRenderer;
+    private AudioSource audioSource;
     private BossState currentState = BossState.Idle;
 
     private bool isPlayerInTrackingRange = false; // 플레이어 감지 여부
@@ -59,6 +67,7 @@ public class F_BossController : MonoBehaviour
         rb = GetComponent<Rigidbody2D>();
         spriteRenderer = GetComponent<SpriteRenderer>();
         originalColor = spriteRenderer.color;
+        audioSource = GetComponent<AudioSource>();
         animator = GetComponent<Animator>();
 
         capsuleCollider = GetComponent<CapsuleCollider2D>();
@@ -300,6 +309,7 @@ public class F_BossController : MonoBehaviour
     public void AnimationEvent_PerformNormalAttack()
     {
         Debug.Log("애니메이션 이벤트: 일반 공격 실행");
+        PlaySound(normalAttackSound);
         if (normalAttackHitbox != null)
         {
             normalAttackHitbox.SetActive(true);
@@ -310,6 +320,7 @@ public class F_BossController : MonoBehaviour
     public void AnimationEvent_StartCharge()
     {
         Debug.Log("애니메이션 이벤트: 돌진 시작");
+        PlaySound(strongAttackSound);
         StartCoroutine(ChargeRoutine());
     }
 
@@ -317,6 +328,10 @@ public class F_BossController : MonoBehaviour
     public void AnimationEvent_SetPierceHitbox(int active)
     {
         Debug.Log($"애니메이션 이벤트: 찌르기 히트박스 {(active == 1 ? "활성화" : "비활성화")}");
+        if (active == 1)
+        {
+            PlaySound(pierceAttackSound);
+        }
         if (pierceAttackHitbox != null)
         {
             pierceAttackHitbox.SetActive(active == 1);
@@ -453,5 +468,14 @@ public class F_BossController : MonoBehaviour
     {
         isPlayerInAttackRange = false;
         Debug.Log("플레이어가 공격 범위를 벗어남.");
+    }
+
+    // 사운드 재생을 위한 헬퍼 함수
+    private void PlaySound(AudioClip clip)
+    {
+        if (audioSource != null && clip != null)
+        {
+            audioSource.PlayOneShot(clip);
+        }
     }
 }

@@ -1,7 +1,8 @@
 using UnityEngine;
 using System.Collections; // 코루틴 사용을 위해 추가
 
-public class F_PlayerController : MonoBehaviour
+[RequireComponent(typeof(AudioSource))]
+public class F_PlayerController : MonoBehaviour 
 {
     [Header("이동 설정")]
     public float moveSpeed = 5.0f;
@@ -15,14 +16,19 @@ public class F_PlayerController : MonoBehaviour
     private bool isParrying = false;
     private bool canParry = true;
 
+    [Header("사운드 설정")]
+    public AudioClip parrySuccessSound; // 패링 성공 사운드
+
     private SpriteRenderer sp;
     private Rigidbody2D rb;
+    private AudioSource audioSource;
     private bool isGrounded = false;
 
     void Start()
     {
         rb = GetComponent<Rigidbody2D>();
         sp = GetComponent<SpriteRenderer>();
+        audioSource = GetComponent<AudioSource>();
     }
 
     void Update()
@@ -120,6 +126,7 @@ public class F_PlayerController : MonoBehaviour
         if (isParrying)
         {
             Debug.Log("<b>[패링 성공! - 완벽한 방어]</b>");
+            PlaySound(parrySuccessSound); // 패링 성공 사운드 재생
 
             // 공격자로부터 보스 컨트롤러를 가져옵니다.
             F_BossController boss = attacker.GetComponent<F_BossController>();
@@ -143,6 +150,15 @@ public class F_PlayerController : MonoBehaviour
                 gameManager.TakeDamage(damage); // 플레이어 데미지
                 StartCoroutine(DamageFlashRoutine());
             }
+        }
+    }
+
+    // 사운드 재생을 위한 헬퍼 함수
+    private void PlaySound(AudioClip clip)
+    {
+        if (audioSource != null && clip != null)
+        {
+            audioSource.PlayOneShot(clip);
         }
     }
 }
