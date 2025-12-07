@@ -1,7 +1,7 @@
 using System.Collections;
 using UnityEngine;
 
-public class F_BossController : MonoBehaviour
+public class F3_BossController : MonoBehaviour
 {
     // 보스의 행동 상태를 정의합니다.
     private enum BossState
