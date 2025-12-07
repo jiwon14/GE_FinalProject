@@ -1,5 +1,5 @@
 fileFormatVersion: 2
-guid: ae16235b01aa155498d0d2a05d795aa5
+guid: 276647fa62a50af4a8fc9eaa07428a1c
 TextureImporter:
   internalIDToNameTable: []
   externalObjects: {}
@@ -48,7 +48,7 @@ TextureImporter:
   spriteMeshType: 1
   alignment: 0
   spritePivot: {x: 0.5, y: 0.5}
-  spritePixelsToUnits: 21
+  spritePixelsToUnits: 18
   spriteBorder: {x: 0, y: 0, z: 0, w: 0}
   spriteGenerateFallbackPhysicsShape: 1
   alphaUsage: 1
@@ -72,7 +72,7 @@ TextureImporter:
     maxTextureSize: 2048
     resizeAlgorithm: 0
     textureFormat: -1
-    textureCompression: 1
+    textureCompression: 0
     compressionQuality: 50
     crunchedCompression: 0
     allowsAlphaSplitting: 0
@@ -97,13 +97,13 @@ TextureImporter:
     serializedVersion: 2
     sprites:
     - serializedVersion: 2
-      name: BosswalkMk2_0
+      name: Player_run_0
       rect:
         serializedVersion: 2
         x: 0
-        y: 227
-        width: 204
-        height: 227
+        y: 540
+        width: 173
+        height: 180
       alignment: 7
       pivot: {x: 0.5, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -112,20 +112,20 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: 5ed8ba9ef160b014d8689163df928669
-      internalID: -2066598702
+      spriteID: 8de8a3323cf57514c91acd5a68bbabee
+      internalID: -79444863
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: BosswalkMk2_1
+      name: Player_run_1
       rect:
         serializedVersion: 2
-        x: 204
-        y: 227
-        width: 204
-        height: 227
+        x: 173
+        y: 540
+        width: 173
+        height: 180
       alignment: 7
       pivot: {x: 0.5, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -134,20 +134,20 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: e9d58e6a5f35038439865fe370c170d7
-      internalID: -1452879245
+      spriteID: 7669ba5f9fbcbb641a56fad58d722334
+      internalID: 1812641255
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: BosswalkMk2_2
+      name: Player_run_2
       rect:
         serializedVersion: 2
-        x: 408
-        y: 227
-        width: 204
-        height: 227
+        x: 346
+        y: 540
+        width: 173
+        height: 180
       alignment: 7
       pivot: {x: 0.5, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -156,42 +156,20 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: 3f72b825155db87429e1218c3f778a2b
-      internalID: -1126620577
+      spriteID: f8fa3c6ec682b26498911a78ed042022
+      internalID: 1780424764
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: BosswalkMk2_3
+      name: Player_run_3
       rect:
         serializedVersion: 2
-        x: 612
-        y: 227
-        width: 204
-        height: 227
-      alignment: 9
-      pivot: {x: 0.45, y: 0}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      customData: 
-      outline: []
-      physicsShape: []
-      tessellationDetail: 0
-      bones: []
-      spriteID: 472898ffea1cd1d4fbd8ac1bda59389d
-      internalID: 2089418100
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: BosswalkMk2_4
-      rect:
-        serializedVersion: 2
-        x: 816
-        y: 227
-        width: 204
-        height: 227
+        x: 0
+        y: 360
+        width: 173
+        height: 180
       alignment: 7
       pivot: {x: 0.5, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -200,20 +178,130 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: 10844c88cb6b0af4e927238912b070b2
-      internalID: 639819430
+      spriteID: 9e90c2dfb78783245817676cef3d4c2b
+      internalID: -96835383
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: BosswalkMk2_5
+      name: Player_run_4
+      rect:
+        serializedVersion: 2
+        x: 173
+        y: 360
+        width: 173
+        height: 180
+      alignment: 7
+      pivot: {x: 0.5, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: d8ab71477e7fdd24ca3cabd09f9e047a
+      internalID: 1708672619
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Player_run_5
+      rect:
+        serializedVersion: 2
+        x: 346
+        y: 360
+        width: 173
+        height: 180
+      alignment: 7
+      pivot: {x: 0.5, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 9324febac3b2f1f41959c1555c8fd751
+      internalID: 1548390209
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Player_run_6
+      rect:
+        serializedVersion: 2
+        x: 0
+        y: 180
+        width: 173
+        height: 180
+      alignment: 7
+      pivot: {x: 0.5, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 6500dba5aa9f87c4aa57b1ace01e3c3b
+      internalID: 209991544
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Player_run_7
+      rect:
+        serializedVersion: 2
+        x: 173
+        y: 180
+        width: 173
+        height: 180
+      alignment: 7
+      pivot: {x: 0.5, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 56275c0d9854dc04cbc898be80f9b4da
+      internalID: 182752044
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Player_run_8
+      rect:
+        serializedVersion: 2
+        x: 346
+        y: 180
+        width: 173
+        height: 180
+      alignment: 7
+      pivot: {x: 0.5, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 25eab7bfc5cd574499ae0d4a778397a5
+      internalID: 2013123788
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Player_run_9
       rect:
         serializedVersion: 2
         x: 0
         y: 0
-        width: 204
-        height: 227
+        width: 173
+        height: 180
       alignment: 7
       pivot: {x: 0.5, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -222,20 +310,20 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: c4a83f625b0ffde47b52c78492f772cc
-      internalID: -777129773
+      spriteID: 5bf367616e52aa648bf1629f49c76f4d
+      internalID: -617948381
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: BosswalkMk2_6
+      name: Player_run_10
       rect:
         serializedVersion: 2
-        x: 204
+        x: 173
         y: 0
-        width: 204
-        height: 227
+        width: 173
+        height: 180
       alignment: 7
       pivot: {x: 0.5, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -244,20 +332,20 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: 470de37ce7f44eb448d2ac2eb80c4864
-      internalID: -1786429227
+      spriteID: cabeb1be874ae5b4ba6ef5f596f8b1e0
+      internalID: -1048066502
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: BosswalkMk2_7
+      name: Player_run_11
       rect:
         serializedVersion: 2
-        x: 408
+        x: 346
         y: 0
-        width: 204
-        height: 227
+        width: 173
+        height: 180
       alignment: 7
       pivot: {x: 0.5, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -266,52 +354,8 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: ef1f2197054e4c94fbd203e370c9faeb
-      internalID: 1407906058
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: BosswalkMk2_8
-      rect:
-        serializedVersion: 2
-        x: 612
-        y: 0
-        width: 204
-        height: 227
-      alignment: 7
-      pivot: {x: 0.5, y: 0}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      customData: 
-      outline: []
-      physicsShape: []
-      tessellationDetail: 0
-      bones: []
-      spriteID: 2fdc1431c60257b4aa009de50b3bcf44
-      internalID: 1009133764
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: BosswalkMk2_9
-      rect:
-        serializedVersion: 2
-        x: 816
-        y: 0
-        width: 204
-        height: 227
-      alignment: 7
-      pivot: {x: 0.5, y: 0}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      customData: 
-      outline: []
-      physicsShape: []
-      tessellationDetail: 0
-      bones: []
-      spriteID: 3a96ee1b34abe744fbf6db9a3f81c9f8
-      internalID: 1636355580
+      spriteID: 405f1fd5d9b19d244b3a21df9e9b5ab9
+      internalID: -782950588
       vertices: []
       indices: 
       edges: []
@@ -320,7 +364,7 @@ TextureImporter:
     customData: 
     physicsShape: []
     bones: []
-    spriteID: ed202cfdf8987384790cf51e21f289a6
+    spriteID: 4a0425836d8e81b4ab2f1921aa59020c
     internalID: 0
     vertices: []
     indices: 
@@ -330,16 +374,18 @@ TextureImporter:
     spriteCustomMetadata:
       entries: []
     nameFileIdTable:
-      BosswalkMk2_0: -2066598702
-      BosswalkMk2_1: -1452879245
-      BosswalkMk2_2: -1126620577
-      BosswalkMk2_3: 2089418100
-      BosswalkMk2_4: 639819430
-      BosswalkMk2_5: -777129773
-      BosswalkMk2_6: -1786429227
-      BosswalkMk2_7: 1407906058
-      BosswalkMk2_8: 1009133764
-      BosswalkMk2_9: 1636355580
+      Player_run_0: -79444863
+      Player_run_1: 1812641255
+      Player_run_10: -1048066502
+      Player_run_11: -782950588
+      Player_run_2: 1780424764
+      Player_run_3: -96835383
+      Player_run_4: 1708672619
+      Player_run_5: 1548390209
+      Player_run_6: 209991544
+      Player_run_7: 182752044
+      Player_run_8: 2013123788
+      Player_run_9: -617948381
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 

@@ -2,6 +2,7 @@ using UnityEngine;
 using System.Collections; // 코루틴 사용을 위해 추가
 
 [RequireComponent(typeof(AudioSource))]
+[RequireComponent(typeof(Animator))] // Animator 컴포넌트 필수 지정<<<추가
 public class F_PlayerController : MonoBehaviour 
 {
     [Header("이동 설정")]
@@ -22,6 +23,7 @@ public class F_PlayerController : MonoBehaviour
     private SpriteRenderer sp;
     private Rigidbody2D rb;
     private AudioSource audioSource;
+    private Animator anim; // [애니메이션] Animator 변수 추가<<<추가
     private bool isGrounded = false;
 
     void Start()
@@ -29,38 +31,58 @@ public class F_PlayerController : MonoBehaviour
         rb = GetComponent<Rigidbody2D>();
         sp = GetComponent<SpriteRenderer>();
         audioSource = GetComponent<AudioSource>();
+        anim = GetComponent<Animator>(); // [애니메이션] 컴포넌트 가져오기<<<<추가
     }
 
     void Update()
     {
-        // 패링 중일 때는 움직임 및 기타 입력을 막음
+        // 1. 땅 체크 상태 업데이트
+        anim.SetBool("isGrounded", isGrounded);
+
+        // --- [문제 해결의 핵심] ---
+        // 패링 중이라면?
         if (isParrying)
         {
-            return;
-        }
+            // 1. 물리 속도를 매 프레임 0으로 강제 고정 (절대 못 움직임)
+            rb.linearVelocity = Vector2.zero;
+            
+            // 2. 혹시라도 달리기 애니메이션이 켜져있다면 끔
+            anim.SetBool("isRunning", false); 
 
-        // 1. 좌우 이동 (오직 화살표 키만 사용)
-        float moveX = 0f;
-        if (Input.GetKey(KeyCode.LeftArrow)) // 왼쪽 화살표
+            // 3. 아래 있는 이동 코드를 실행하지 않고 여기서 함수 종료
+            return; 
+        }
+        // -----------------------
+
+        // 2. 좌우 이동 (패링 중이 아닐 때만 실행됨)
+        if (isGrounded)
         {
-            moveX = -1f;
-            sp.flipX = true;
-        }
-        else if (Input.GetKey(KeyCode.RightArrow)) // 오른쪽 화살표
-        {
-            moveX = 1f;
-            sp.flipX = false;
+            float moveX = 0f;
+            if (Input.GetKey(KeyCode.LeftArrow))
+            {
+                moveX = -1f;
+                sp.flipX = true;
+            }
+            else if (Input.GetKey(KeyCode.RightArrow))
+            {
+                moveX = 1f;
+                sp.flipX = false;
+            }
+
+            rb.linearVelocity = new Vector2(moveX * moveSpeed, rb.linearVelocity.y);
+            anim.SetBool("isRunning", moveX != 0);
         }
 
-        rb.linearVelocity = new Vector2(moveX * moveSpeed, rb.linearVelocity.y);
-
-        // 점프
+        // 3. 점프
         if (Input.GetKeyDown(KeyCode.Space) && isGrounded)
         {
             rb.linearVelocity = new Vector2(rb.linearVelocity.x, jumpForce);
+            anim.SetTrigger("doJump");
+            isGrounded = false;
+            anim.SetBool("isGrounded", false);
         }
 
-        // 패링 입력 ('D' 키)
+        // 4. 패링 입력
         if (Input.GetKeyDown(KeyCode.D) && canParry)
         {
             StartCoroutine(ParryRoutine());
@@ -86,18 +108,30 @@ public class F_PlayerController : MonoBehaviour
 
     IEnumerator ParryRoutine()
     {
+        // 1. 패링 상태 시작
         canParry = false;
         isParrying = true;
-        rb.linearVelocity = Vector2.zero; // 패링 입력 시 그 자리에 멈춤
+        
+        // 2. [가장 중요] 이동 기능 물리적 삭제 (X축 잠금)
+        // 현재 속도를 0으로 없애고 + X축으로 아예 못 움직이게 못 박아버립니다.
+        rb.linearVelocity = Vector2.zero; 
+        rb.constraints = RigidbodyConstraints2D.FreezePositionX | RigidbodyConstraints2D.FreezeRotation;
 
-        Color originalColor = sp.color;
-        sp.color = Color.yellow; // 패링 중일 때 노란색으로 변경
+        // 3. 패링 애니메이션 시작
+        anim.SetBool("isParrying", true); 
 
+        // 4. 패링 판정 시간 대기
         yield return new WaitForSeconds(parryWindow);
 
+        // 5. 패링 상태 종료
         isParrying = false;
-        sp.color = originalColor; // 원래 색으로 복구
+        anim.SetBool("isParrying", false);
 
+        // 6. [중요] 이동 기능 복구 (X축 잠금 해제)
+        // 다시 움직일 수 있게 회전만 잠그고 나머지는 풉니다.
+        rb.constraints = RigidbodyConstraints2D.FreezeRotation;
+
+        // 7. 쿨타임 대기
         yield return new WaitForSeconds(parryCooldown);
         canParry = true;
     }
