@@ -1,8 +1,8 @@
 using UnityEngine;
-using System.Collections; // 코루틴 사용을 위해 추가
+using System.Collections; 
 
 [RequireComponent(typeof(AudioSource))]
-[RequireComponent(typeof(Animator))] // Animator 컴포넌트 필수 지정<<<추가
+[RequireComponent(typeof(Animator))] 
 public class F_PlayerController : MonoBehaviour 
 {
     [Header("이동 설정")]
@@ -12,26 +12,37 @@ public class F_PlayerController : MonoBehaviour
     public float jumpForce = 10.0f;
 
     [Header("패링 설정")]
-    [SerializeField] private float parryWindow = 0.3f;
+    [SerializeField] private float parryStartupTime = 0.25f; // 선딜레이
+    [SerializeField] private float parryWindow = 0.3f;       // 패링 유지 시간
     [SerializeField] private float parryCooldown = 1.0f;
-    private bool isParrying = false;
+    
+    private bool isParrying = false;    // 동작 중 (이동 잠금용)
+    private bool isParryActive = false; // 판정 중 (방어 성공용)
     private bool canParry = true;
 
     [Header("사운드 설정")]
-    public AudioClip parrySuccessSound; // 패링 성공 사운드
+    public AudioClip parrySuccessSound; 
 
     private SpriteRenderer sp;
     private Rigidbody2D rb;
     private AudioSource audioSource;
-    private Animator anim; // [애니메이션] Animator 변수 추가<<<추가
+    private Animator anim; 
     private bool isGrounded = false;
+
+    // [수정] 피격 효과 중복 방지용 변수 추가
+    private Coroutine flashRoutine; 
+    private Color defaultColor;     
 
     void Start()
     {
         rb = GetComponent<Rigidbody2D>();
         sp = GetComponent<SpriteRenderer>();
         audioSource = GetComponent<AudioSource>();
-        anim = GetComponent<Animator>(); // [애니메이션] 컴포넌트 가져오기<<<<추가
+        anim = GetComponent<Animator>();
+
+        // [수정] 게임 시작 시점의 진짜 원래 색을 저장해둡니다.
+        // 이제 맞을 때마다 sp.color를 가져오지 않고 이 변수를 사용합니다.
+        defaultColor = sp.color;
     }
 
     void Update()
@@ -39,22 +50,16 @@ public class F_PlayerController : MonoBehaviour
         // 1. 땅 체크 상태 업데이트
         anim.SetBool("isGrounded", isGrounded);
 
-        // --- [문제 해결의 핵심] ---
-        // 패링 중이라면?
+        // --- 패링 중 이동/행동 잠금 ---
         if (isParrying)
         {
-            // 1. 물리 속도를 매 프레임 0으로 강제 고정 (절대 못 움직임)
             rb.linearVelocity = Vector2.zero;
-            
-            // 2. 혹시라도 달리기 애니메이션이 켜져있다면 끔
             anim.SetBool("isRunning", false); 
-
-            // 3. 아래 있는 이동 코드를 실행하지 않고 여기서 함수 종료
             return; 
         }
         // -----------------------
 
-        // 2. 좌우 이동 (패링 중이 아닐 때만 실행됨)
+        // 2. 좌우 이동 (패링 중이 아닐 때만)
         if (isGrounded)
         {
             float moveX = 0f;
@@ -89,7 +94,6 @@ public class F_PlayerController : MonoBehaviour
         }
     }
 
-    // 바닥 충돌 감지 (Collision)
     void OnCollisionEnter2D(Collision2D collision)
     {
         if (collision.gameObject.CompareTag("Ground"))
@@ -108,86 +112,98 @@ public class F_PlayerController : MonoBehaviour
 
     IEnumerator ParryRoutine()
     {
-        // 1. 패링 상태 시작
         canParry = false;
-        isParrying = true;
+        isParrying = true; 
         
-        // 2. [가장 중요] 이동 기능 물리적 삭제 (X축 잠금)
-        // 현재 속도를 0으로 없애고 + X축으로 아예 못 움직이게 못 박아버립니다.
         rb.linearVelocity = Vector2.zero; 
         rb.constraints = RigidbodyConstraints2D.FreezePositionX | RigidbodyConstraints2D.FreezeRotation;
-
-        // 3. 패링 애니메이션 시작
+        
         anim.SetBool("isParrying", true); 
 
-        // 4. 패링 판정 시간 대기
-        yield return new WaitForSeconds(parryWindow);
+        // 선딜레이
+        yield return new WaitForSeconds(parryStartupTime);
 
-        // 5. 패링 상태 종료
-        isParrying = false;
+        // 판정 시작
+        isParryActive = true;     
+        
+        // (시각적 피드백) - 여기는 일시적인 효과라 sp.color를 직접 써도 무방하지만,
+        // 안전하게 defaultColor를 기준으로 변경해도 됩니다.
+        sp.color = Color.yellow;  
+
+        yield return new WaitForSeconds(parryWindow); 
+
+        // 판정 종료
+        isParryActive = false;    
+        sp.color = defaultColor; // [수정] 색 복구 시 defaultColor 사용
+
+        isParrying = false;       
         anim.SetBool("isParrying", false);
 
-        // 6. [중요] 이동 기능 복구 (X축 잠금 해제)
-        // 다시 움직일 수 있게 회전만 잠그고 나머지는 풉니다.
         rb.constraints = RigidbodyConstraints2D.FreezeRotation;
 
-        // 7. 쿨타임 대기
         yield return new WaitForSeconds(parryCooldown);
         canParry = true;
     }
 
-    // 데미지를 입었을 때 깜빡이는 효과
+    // [수정] 데미지 플래시 코루틴 개선
     private IEnumerator DamageFlashRoutine()
     {
-        int blinkCount = 2; // 깜빡일 횟수
-        float blinkDuration = 0.1f; // 각 깜빡임 지속 시간
-
-        Color originalColor = sp.color;
+        int blinkCount = 2; 
+        float blinkDuration = 0.1f; 
 
         for (int i = 0; i < blinkCount; i++)
         {
-            sp.color = new Color(1f, 0.5f, 0.5f, 0.8f); // 연한 빨강
+            sp.color = new Color(1f, 0.5f, 0.5f, 0.8f); // 빨간색
             yield return new WaitForSeconds(blinkDuration);
-            sp.color = originalColor;
+            
+            sp.color = defaultColor; // [수정] 무조건 저장해둔 원래 색으로 복구
             yield return new WaitForSeconds(blinkDuration);
         }
+        
+        // 코루틴 종료 시 변수 비움
+        flashRoutine = null;
     }
 
-    // --- [중요] 공격 판정 처리 ---
     public void HandleAttack(int damage, GameObject attacker)
     {
-        // 1. 패링 성공 (isParrying이 true일 때만 실행)
-        if (isParrying)
+        if (isParryActive) 
         {
             Debug.Log("<b>[패링 성공! - 완벽한 방어]</b>");
-            PlaySound(parrySuccessSound); // 패링 성공 사운드 재생
+            PlaySound(parrySuccessSound);
 
-            // 공격자로부터 보스 컨트롤러를 가져옵니다.
             F_BossController boss = attacker.GetComponent<F_BossController>();
             if (boss != null)
             {
-                // 패링 성공 시 반격 데미지
                 int parryDamage = 10;
                 boss.TakeDamage(parryDamage);
-
                 boss.GetStunned();
-                Debug.Log("보스를 스턴시킵니다!");
             }
         }
-        // 2. 패링 실패 (늦었거나 안 눌렀을 때)
         else
         {
             Debug.Log("패링 실패 - 플레이어 피격");
             F_GameManager gameManager = FindFirstObjectByType<F_GameManager>();
             if (gameManager != null)
             {
-                gameManager.TakeDamage(damage); // 플레이어 데미지
-                StartCoroutine(DamageFlashRoutine());
+                gameManager.TakeDamage(damage);
+
+                // --- [수정] 중복 실행 방지 로직 ---
+                
+                // 1. 이미 깜빡이는 중이면 멈춤
+                if (flashRoutine != null)
+                {
+                    StopCoroutine(flashRoutine);
+                }
+
+                // 2. 색깔 초기화 (붉은색 상태에서 다시 시작되는 것 방지)
+                sp.color = defaultColor;
+
+                // 3. 새로 시작하고 변수에 저장
+                flashRoutine = StartCoroutine(DamageFlashRoutine());
             }
         }
     }
 
-    // 사운드 재생을 위한 헬퍼 함수
     private void PlaySound(AudioClip clip)
     {
         if (audioSource != null && clip != null)

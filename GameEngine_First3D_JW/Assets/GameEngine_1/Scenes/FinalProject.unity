@@ -340,7 +340,7 @@ Transform:
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1.5974712, y: 1.5451607, z: 1}
+  m_LocalScale: {x: -1.597471, y: 1.5451607, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 126329996}
@@ -430,7 +430,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b7eddadf9b6237b439187880f0be489c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  damage: 2
+  damage: 1
 --- !u!212 &678137634
 SpriteRenderer:
   m_ObjectHideFlags: 0
@@ -472,8 +472,8 @@ SpriteRenderer:
   m_AutoUVMaxDistance: 0.5
   m_AutoUVMaxAngle: 89
   m_LightmapParameters: {fileID: 0}
-  m_SortingLayerID: -1997482333
-  m_SortingLayer: 3
+  m_SortingLayerID: 91216517
+  m_SortingLayer: 4
   m_SortingOrder: 0
   m_Sprite: {fileID: 21300000, guid: e0940a01c9bd0e042882624b8c2659df, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
@@ -516,7 +516,7 @@ Transform:
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1.5127059, y: 1.3224, z: 1}
+  m_LocalScale: {x: -1.512706, y: 1.3224, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 126329996}
@@ -559,7 +559,7 @@ BoxCollider2D:
   m_SpriteTilingProperty:
     border: {x: 0, y: 0, z: 0, w: 0}
     pivot: {x: 0.5, y: 0}
-    oldSize: {x: 21.166666, y: 10}
+    oldSize: {x: 25.4, y: 12}
     newSize: {x: 25.4, y: 12}
     adaptiveTilingThreshold: 0.5
     drawMode: 0
@@ -795,8 +795,8 @@ Transform:
   m_GameObject: {fileID: 888517653}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: -6.370001, y: 5.38, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_LocalPosition: {x: -11.03, y: 5.1, z: 0}
+  m_LocalScale: {x: 1.7365187, y: 1.6313, z: 1.6313}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 1538097717}
@@ -1292,6 +1292,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   moveSpeed: 10
   jumpForce: 15
+  parryStartupTime: 0.25
   parryWindow: 0.3
   parryCooldown: 1
   parrySuccessSound: {fileID: 8300000, guid: 2cdda754db412c44eadb2d9174771ef4, type: 3}
@@ -1656,9 +1657,9 @@ SpriteRenderer:
   m_SortingLayerID: -1997482333
   m_SortingLayer: 3
   m_SortingOrder: 0
-  m_Sprite: {fileID: 1495882384, guid: f6a04aaa46d0ca84d9ada21599fcb9f8, type: 3}
+  m_Sprite: {fileID: 21300000, guid: ae443efe2a86c87499c20f9f97e2308c, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
-  m_FlipX: 1
+  m_FlipX: 0
   m_FlipY: 0
   m_DrawMode: 0
   m_Size: {x: 23.4375, y: 21.6875}
@@ -1761,11 +1762,12 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   playerTransform: {fileID: 1441428359}
+  spriteFacesLeft: 0
   health: 50
   moveSpeed: 5
   chargeSpeed: 15
   actionCooldown: 2
-  stoppingDistance: 2
+  stoppingDistance: 13
   normalAttackHitbox: {fileID: 0}
   pierceAttackHitbox: {fileID: 0}
   normalAttackSound: {fileID: 8300000, guid: f656109deb806d2498acf46c8e2b0495, type: 3}
@@ -1787,7 +1789,7 @@ AudioSource:
   serializedVersion: 4
   OutputAudioMixerGroup: {fileID: 0}
   m_audioClip: {fileID: 0}
-  m_Resource: {fileID: 0}
+  m_Resource: {fileID: 8300000, guid: b6dc04f2884eb5b46b675390b1e75e84, type: 3}
   m_PlayOnAwake: 1
   m_Volume: 1
   m_Pitch: 1
@@ -2129,8 +2131,8 @@ Transform:
   m_GameObject: {fileID: 2067889922}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1.8227, y: 0.91403, z: 1}
+  m_LocalPosition: {x: 0, y: 2.43, z: 0}
+  m_LocalScale: {x: -1.8227, y: 0.91403, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 126329996}
