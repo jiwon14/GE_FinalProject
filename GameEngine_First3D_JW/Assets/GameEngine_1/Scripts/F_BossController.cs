@@ -18,14 +18,15 @@ public class F_BossController : MonoBehaviour
 
     [Header("능력치")]
     private BossHealth bossHealth; // BossHealth 참조로 변경
-    public float moveSpeed = 2f;         
-    public float chargeSpeed = 8f;       
-    public float actionCooldown = 1.5f;    
+    public float moveSpeed = 2f;
+    public float chargeSpeed = 8f;
+    public float actionCooldown = 1.5f;
     [SerializeField] private float stoppingDistance = 2.0f;
 
     [Header("백스텝")]
-    public float backstepCooldown = 3.0f; // 백스텝 쿨타임
-    public float backstepDistance = 2.0f; // 백스텝으로 이동할 거리
+    public float backstepCooldown = 6.0f; // 백스텝 쿨타임
+    public float backstepSpeed = 12.0f; // 백스텝 속도 (moveSpeed의 3배)
+    public AnimationClip backstepAnimation; // 백스텝 애니메이션 클립 참조
     
     [Header("공격 판정")]
     public GameObject normalAttackHitbox; 
@@ -33,7 +34,7 @@ public class F_BossController : MonoBehaviour
 
     [Header("사운드")]
     public AudioClip normalAttackSound; 
-    public AudioClip strongAttackSound; 
+    public AudioClip strongAttackSound;
     public AudioClip pierceAttackSound; 
 
     [Header("찌르기 공격 (Attack 2) 설정")]
@@ -93,7 +94,7 @@ public class F_BossController : MonoBehaviour
         if (currentState == BossState.Dead || currentState == BossState.Stunned) return;
 
         // [최우선 순위] 다른 행동 중이 아닐 때, 플레이어가 너무 가까우면 백스텝 시도
-        if (currentState != BossState.Attacking && currentState != BossState.Piercing && currentState != BossState.Backstepping && currentState != BossState.Stunned &&
+        if (currentState != BossState.Attacking && currentState != BossState.Piercing && currentState != BossState.Backstepping &&
             isPlayerInBackstepRange &&
             Time.time >= lastBackstepTime + backstepCooldown)
         {
@@ -150,27 +151,67 @@ public class F_BossController : MonoBehaviour
 
     void FixedUpdate()
     {
-        // [수정] 백스텝 중에는 코루틴이 직접 위치를 제어하므로, FixedUpdate에서는 이동을 처리하지 않습니다.
-        if (currentState != BossState.Stunned && currentState != BossState.Dead && currentState != BossState.Backstepping)
+        // [수정] 각 상태에 맞는 이동 로직만 명확하게 실행합니다.
+        if (currentState == BossState.Deciding)
+        {
             rb.linearVelocity = new Vector2(moveDirection.x * moveSpeed, rb.linearVelocity.y);
+        }
+        else if (currentState == BossState.Backstepping)
+        {
+            // 백스텝 상태일 때만 뒤로 물러나는 움직임을 처리합니다.
+            rb.linearVelocity = new Vector2(moveDirection.x * backstepSpeed, rb.linearVelocity.y);
+        }
+        // 다른 상태(Idle, Attacking 등)에서는 FixedUpdate에서 속도를 제어하지 않습니다.
+        // SetState에서 속도를 0으로 만듭니다.
     }
 
     void SetState(BossState newState)
     {
         if (currentState == newState) return;
 
-        // 새 상태에 대한 초기화
-        if (newState == BossState.Attacking || newState == BossState.Piercing) moveDirection = Vector2.zero;
+        // [핵심 수정] 상태 변경 직전에 모든 움직임을 확실하게 초기화합니다.
+        rb.linearVelocity = Vector2.zero;
+        moveDirection = Vector2.zero;
+        animator.SetBool(IsWalkingAnimID, false);
 
-        if (newState == BossState.Backstepping)
-        {
-            lastBackstepTime = Time.time; // 백스텝 시작 시 쿨타임 기록
-            moveDirection = Vector2.zero; // 이동 코루틴이 제어하므로 일단 정지
-            animator.SetTrigger(DoBackstepTriggerID); // 애니메이션 Trigger 발동
-            StartCoroutine(BackstepMovementRoutine()); // 백스텝 이동 코루틴 시작
-        }
-
+        // 새로운 상태로 전환
         currentState = newState;
+
+        // [핵심 수정] 새로운 상태에 진입할 때 필요한 초기화 로직을 여기서 실행합니다.
+        // "Enter" 로직 통합
+        switch (currentState)
+        {
+            case BossState.Idle:
+                // Idle 상태에서는 아무것도 하지 않습니다.
+                break;
+
+            case BossState.Deciding:
+                // Deciding 상태에 진입하면 다시 행동을 결정하기 시작합니다.
+                break;
+
+            case BossState.Attacking:
+                // 공격 상태 진입 시, 즉시 플레이어를 바라보게 합니다.
+                if (playerTransform != null)
+                {
+                    bool isPlayerRight = (playerTransform.position.x - transform.position.x) > 0;
+                    ApplyScale(isPlayerRight);
+                }
+                break;
+
+            case BossState.Backstepping:
+                // 백스텝을 시작할 때, 이동 방향과 관계없이 항상 플레이어를 바라보도록 즉시 방향을 전환합니다.
+                if (playerTransform != null)
+                {
+                    bool isPlayerRight = (playerTransform.position.x - transform.position.x) > 0;
+                    ApplyScale(isPlayerRight);
+                }
+
+                float directionAwayFromPlayer = (playerTransform != null) ? -Mathf.Sign(playerTransform.position.x - transform.position.x) : -1f;
+                moveDirection = new Vector2(directionAwayFromPlayer, 0); // 백스텝 방향 설정
+                animator.SetTrigger(DoBackstepTriggerID);
+                StartCoroutine(BackstepDurationRoutine());
+                break;
+        }
     }
 
     void FacePlayer()
@@ -221,8 +262,6 @@ public class F_BossController : MonoBehaviour
 
         // [수정] 상태를 먼저 Attacking으로 확실하게 변경합니다.
         SetState(BossState.Attacking);
-        moveDirection = Vector2.zero; 
-        animator.SetBool(IsWalkingAnimID, false); 
         
         // Attack1, Attack3, Attack4 중에서 랜덤으로 하나를 선택합니다.
         int[] attackChoices = { 1, 3, 4 };
@@ -251,11 +290,11 @@ public class F_BossController : MonoBehaviour
     public void Die() // BossHealth에서 호출할 수 있도록 public으로 변경
     {
         Debug.Log("보스가 쓰러졌습니다!");
-        SetState(BossState.Dead); 
 
         // 1. 모든 행동/코루틴 즉시 중단
         StopAllCoroutines(); 
         
+        SetState(BossState.Dead);
         // 2. 물리/이동 정지
         rb.linearVelocity = Vector2.zero; 
         moveDirection = Vector2.zero;
@@ -321,44 +360,41 @@ public class F_BossController : MonoBehaviour
     // [가장 중요] 백스텝 애니메이션 종료 이벤트
     public void AnimationEvent_BackstepFinished()
     {
-        // 죽었으면 상태를 바꾸지 않음
-        if (currentState == BossState.Dead) return;
-
-        // [중요] 이전에 사용된 백스텝 트리거가 남아있지 않도록 확실하게 리셋합니다.
-        animator.ResetTrigger(DoBackstepTriggerID);
-
-        // [수정] 백스텝이 끝난 시점을 기준으로 쿨다운을 다시 계산하여 연속 발동을 방지합니다.
-        lastBackstepTime = Time.time;
-
-        // 백스텝이 끝났으므로 다음 행동 결정 상태로 전환
-        SetState(BossState.Deciding);
+        // 이 함수의 모든 로직을 BackstepDurationRoutine으로 이전했습니다.
+        // 이중 호출을 막기 위해 비워둡니다.
     }
 
-    private IEnumerator BackstepMovementRoutine()
+    private IEnumerator BackstepDurationRoutine()
     {
-        // 1. 목표 지점 계산
-        float directionAwayFromPlayer = (playerTransform != null) ? -Mathf.Sign(playerTransform.position.x - transform.position.x) : -1f;
-        Vector2 startPosition = transform.position;
-        Vector2 targetPosition = startPosition + new Vector2(directionAwayFromPlayer * backstepDistance, 0);
-
-        // 백스텝 시작 시 플레이어를 즉시 바라보게 함
-        FacePlayer();
-
-        // 2. 목표 지점으로 이동
-        while (Vector2.Distance(transform.position, targetPosition) > 0.01f)
+        // 1. [핵심 수정] 애니메이션 클립의 실제 길이를 가져와서 그 시간만큼만 이동 및 대기합니다.
+        // 이렇게 하면 이동 시간과 애니메이션 재생 시간이 완벽하게 동기화됩니다.
+        float animationDuration = 1.0f; // 애니메이션 클립이 할당되지 않았을 경우의 기본값
+        if (backstepAnimation != null)
         {
-            // 죽거나 스턴 상태가 되면 즉시 중단
-            if (currentState == BossState.Dead || currentState == BossState.Stunned) yield break;
-
-            // MoveTowards를 사용하여 프레임마다 목표 위치로 이동
-            transform.position = Vector2.MoveTowards(transform.position, targetPosition, moveSpeed * Time.deltaTime);
-
-            yield return null;
+            animationDuration = backstepAnimation.length;
         }
+        yield return new WaitForSeconds(animationDuration);
 
-        // 3. 이동 완료 후 정확한 위치 보정 및 속도 초기화
-        transform.position = targetPosition;
+        // 2. 애니메이션이 끝나면 물리적인 이동을 즉시 멈춥니다.
+        moveDirection = Vector2.zero;
         rb.linearVelocity = Vector2.zero;
+
+        // 3. 백스텝 후딜레이 시간만큼 추가로 대기합니다.
+        // 이 시간 동안에도 currentState는 'Backstepping'이므로, Update()에서 다른 행동을 할 수 없습니다.
+        yield return new WaitForSeconds(0.3f);
+
+        // 4. 모든 과정(애니메이션 + 후딜레이)이 끝났는지 최종 확인합니다.
+        // (스턴 등으로 중간에 코루틴이 중단되지 않았는지 확인하는 안전장치)
+        if (currentState == BossState.Backstepping)
+        {
+            // [핵심 수정] 백스텝의 모든 과정(애니메이션 + 후딜레이)이 끝난 이 시점에 쿨타임을 기록합니다.
+            // 이렇게 하면 백스텝이 연쇄적으로 발동되는 것을 완벽하게 막을 수 있습니다.
+            lastBackstepTime = Time.time;
+            // [추가] 백스텝 또한 하나의 행동으로 간주하여, 다음 공격까지의 딜레이를 적용합니다.
+            // 이렇게 하면 백스텝 직후 바로 공격하는 어색한 움직임을 방지할 수 있습니다.
+            lastActionTime = Time.time;
+            SetState(BossState.Deciding);
+        }
     }
 
     // --- 나머지 로직 ---
