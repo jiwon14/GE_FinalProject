@@ -6,7 +6,7 @@ public class F_BossController : MonoBehaviour
 {
     private enum BossState
     {
-        Idle, Deciding, Attacking, Piercing, Stunned, Dead
+        Idle, Deciding, Attacking, Piercing, Stunned, Dead, Backstepping
     }
 
     [Header("참조")]
@@ -21,7 +21,11 @@ public class F_BossController : MonoBehaviour
     public float moveSpeed = 2f;         
     public float chargeSpeed = 8f;       
     public float actionCooldown = 1.5f;    
-    [SerializeField] private float stoppingDistance = 2.0f; 
+    [SerializeField] private float stoppingDistance = 2.0f;
+
+    [Header("백스텝")]
+    public float backstepCooldown = 3.0f; // 백스텝 쿨타임
+    public float backstepDistance = 2.0f; // 백스텝으로 이동할 거리
     
     [Header("공격 판정")]
     public GameObject normalAttackHitbox; 
@@ -45,8 +49,10 @@ public class F_BossController : MonoBehaviour
     private BossState currentState = BossState.Idle;
 
     private bool isPlayerInTrackingRange = false; 
-    private bool isPlayerInAttackRange = false;   
-    private float lastActionTime = 0f;            
+    private bool isPlayerInAttackRange = false;
+    private bool isPlayerInBackstepRange = false; // 백스텝 존 감지 플래그
+    private float lastActionTime = 0f;
+    private float lastBackstepTime = -99f; // 마지막 백스텝 시간
     
     private CapsuleCollider2D capsuleCollider;    
     private Vector2 moveDirection = Vector2.zero; 
@@ -61,6 +67,7 @@ public class F_BossController : MonoBehaviour
     private readonly int Attack3TriggerID = Animator.StringToHash("Attack3");
     private readonly int Attack4TriggerID = Animator.StringToHash("Attack4"); // Attack4 Trigger 추가
     private readonly int IsWalkingAnimID = Animator.StringToHash("isWalking");
+    private readonly int DoBackstepTriggerID = Animator.StringToHash("doBackstep"); // 백스텝용 Trigger
     private readonly int StunAnimID = Animator.StringToHash("Stun");
     private readonly int DieAnimID = Animator.StringToHash("Die");
 
@@ -84,6 +91,16 @@ public class F_BossController : MonoBehaviour
     {
         // [철벽 방어 1] 죽었으면 Update 로직 아예 실행 X
         if (currentState == BossState.Dead || currentState == BossState.Stunned) return;
+
+        // [최우선 순위] 다른 행동 중이 아닐 때, 플레이어가 너무 가까우면 백스텝 시도
+        if (currentState != BossState.Attacking && currentState != BossState.Piercing && currentState != BossState.Backstepping && currentState != BossState.Stunned &&
+            isPlayerInBackstepRange &&
+            Time.time >= lastBackstepTime + backstepCooldown)
+        {
+            SetState(BossState.Backstepping);
+            // 백스텝이 발동되면, 이번 프레임의 다른 모든 Update 로직(공격 결정 등)을 건너뜁니다.
+            return;
+        }
 
         switch (currentState)
         {
@@ -123,23 +140,36 @@ public class F_BossController : MonoBehaviour
                     DecideNextAction();
                 }
                 break;
-        }
-        
-        if (currentState == BossState.Attacking || currentState == BossState.Piercing) 
-        {
-            moveDirection = Vector2.zero;
+
+            case BossState.Backstepping:
+                // 이 상태에서는 애니메이션이 끝날 때까지 아무것도 하지 않고 기다립니다.
+                // 모든 이동과 상태 변경은 애니메이션 이벤트가 처리합니다.
+                break;
         }
     }
 
     void FixedUpdate()
     {
-        if (currentState != BossState.Stunned && currentState != BossState.Dead)
+        // [수정] 백스텝 중에는 코루틴이 직접 위치를 제어하므로, FixedUpdate에서는 이동을 처리하지 않습니다.
+        if (currentState != BossState.Stunned && currentState != BossState.Dead && currentState != BossState.Backstepping)
             rb.linearVelocity = new Vector2(moveDirection.x * moveSpeed, rb.linearVelocity.y);
     }
 
     void SetState(BossState newState)
     {
         if (currentState == newState) return;
+
+        // 새 상태에 대한 초기화
+        if (newState == BossState.Attacking || newState == BossState.Piercing) moveDirection = Vector2.zero;
+
+        if (newState == BossState.Backstepping)
+        {
+            lastBackstepTime = Time.time; // 백스텝 시작 시 쿨타임 기록
+            moveDirection = Vector2.zero; // 이동 코루틴이 제어하므로 일단 정지
+            animator.SetTrigger(DoBackstepTriggerID); // 애니메이션 Trigger 발동
+            StartCoroutine(BackstepMovementRoutine()); // 백스텝 이동 코루틴 시작
+        }
+
         currentState = newState;
     }
 
@@ -189,10 +219,11 @@ public class F_BossController : MonoBehaviour
             ApplyScale(isPlayerRight);
         }
 
+        // [수정] 상태를 먼저 Attacking으로 확실하게 변경합니다.
         SetState(BossState.Attacking);
         moveDirection = Vector2.zero; 
         animator.SetBool(IsWalkingAnimID, false); 
-
+        
         // Attack1, Attack3, Attack4 중에서 랜덤으로 하나를 선택합니다.
         int[] attackChoices = { 1, 3, 4 };
         int choiceIndex = Random.Range(0, attackChoices.Length);
@@ -285,6 +316,49 @@ public class F_BossController : MonoBehaviour
         animator.SetBool(IsWalkingAnimID, false); 
         lastActionTime = Time.time; 
         SetState(BossState.Deciding);
+    }
+
+    // [가장 중요] 백스텝 애니메이션 종료 이벤트
+    public void AnimationEvent_BackstepFinished()
+    {
+        // 죽었으면 상태를 바꾸지 않음
+        if (currentState == BossState.Dead) return;
+
+        // [중요] 이전에 사용된 백스텝 트리거가 남아있지 않도록 확실하게 리셋합니다.
+        animator.ResetTrigger(DoBackstepTriggerID);
+
+        // [수정] 백스텝이 끝난 시점을 기준으로 쿨다운을 다시 계산하여 연속 발동을 방지합니다.
+        lastBackstepTime = Time.time;
+
+        // 백스텝이 끝났으므로 다음 행동 결정 상태로 전환
+        SetState(BossState.Deciding);
+    }
+
+    private IEnumerator BackstepMovementRoutine()
+    {
+        // 1. 목표 지점 계산
+        float directionAwayFromPlayer = (playerTransform != null) ? -Mathf.Sign(playerTransform.position.x - transform.position.x) : -1f;
+        Vector2 startPosition = transform.position;
+        Vector2 targetPosition = startPosition + new Vector2(directionAwayFromPlayer * backstepDistance, 0);
+
+        // 백스텝 시작 시 플레이어를 즉시 바라보게 함
+        FacePlayer();
+
+        // 2. 목표 지점으로 이동
+        while (Vector2.Distance(transform.position, targetPosition) > 0.01f)
+        {
+            // 죽거나 스턴 상태가 되면 즉시 중단
+            if (currentState == BossState.Dead || currentState == BossState.Stunned) yield break;
+
+            // MoveTowards를 사용하여 프레임마다 목표 위치로 이동
+            transform.position = Vector2.MoveTowards(transform.position, targetPosition, moveSpeed * Time.deltaTime);
+
+            yield return null;
+        }
+
+        // 3. 이동 완료 후 정확한 위치 보정 및 속도 초기화
+        transform.position = targetPosition;
+        rb.linearVelocity = Vector2.zero;
     }
 
     // --- 나머지 로직 ---
@@ -391,5 +465,7 @@ public class F_BossController : MonoBehaviour
     public void OnPlayerExitTrackingRange() { isPlayerInTrackingRange = false; isPlayerInAttackRange = false; }
     public void OnPlayerEnterAttackRange() { isPlayerInAttackRange = true; }
     public void OnPlayerExitAttackRange() { isPlayerInAttackRange = false; }
+    public void OnPlayerEnterBackstepRange() { isPlayerInBackstepRange = true; }
+    public void OnPlayerExitBackstepRange() { isPlayerInBackstepRange = false; }
     private void PlaySound(AudioClip clip) { if (audioSource != null && clip != null) audioSource.PlayOneShot(clip); }
 }

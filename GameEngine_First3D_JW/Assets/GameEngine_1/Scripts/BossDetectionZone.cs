@@ -1,21 +1,45 @@
 using UnityEngine;
-using UnityEngine.Events; // UnityEvent를 사용하기 위해 추가
 
 public class BossDetectionZone : MonoBehaviour
 {
-    // Inspector 창에서 설정할 이벤트
-    [Tooltip("플레이어가 이 구역에 들어왔을 때 호출될 이벤트")]
-    public UnityEvent OnPlayerEnter;
+    public enum ZoneType
+    {
+        Tracking,
+        Attack,
+        Backstep
+    }
 
-    [Tooltip("플레이어가 이 구역에서 나갔을 때 호출될 이벤트")]
-    public UnityEvent OnPlayerExit;
+    [Tooltip("이 존의 역할을 선택하세요.")]
+    public ZoneType zoneType;
+
+    private F_BossController bossController;
+
+    void Awake()
+    {
+        // 부모 오브젝트에서 F_BossController를 찾아옵니다.
+        bossController = GetComponentInParent<F_BossController>();
+        if (bossController == null)
+        {
+            Debug.LogError("부모 오브젝트에서 F_BossController를 찾을 수 없습니다!", gameObject);
+        }
+    }
 
     private void OnTriggerEnter2D(Collider2D other)
     {
         if (other.CompareTag("Player"))
         {
-            // 설정된 Enter 이벤트를 호출합니다.
-            OnPlayerEnter.Invoke();
+            switch (zoneType)
+            {
+                case ZoneType.Tracking:
+                    bossController.OnPlayerEnterTrackingRange();
+                    break;
+                case ZoneType.Attack:
+                    bossController.OnPlayerEnterAttackRange();
+                    break;
+                case ZoneType.Backstep:
+                    bossController.OnPlayerEnterBackstepRange();
+                    break;
+            }
         }
     }
 
@@ -23,8 +47,18 @@ public class BossDetectionZone : MonoBehaviour
     {
         if (other.CompareTag("Player"))
         {
-            // 설정된 Exit 이벤트를 호출합니다.
-            OnPlayerExit.Invoke();
+            switch (zoneType)
+            {
+                case ZoneType.Tracking:
+                    bossController.OnPlayerExitTrackingRange();
+                    break;
+                case ZoneType.Attack:
+                    bossController.OnPlayerExitAttackRange();
+                    break;
+                case ZoneType.Backstep:
+                    bossController.OnPlayerExitBackstepRange();
+                    break;
+            }
         }
     }
 }

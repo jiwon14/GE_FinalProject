@@ -146,7 +146,7 @@ Transform:
   m_GameObject: {fileID: 27188352}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: -36.200005, y: 5.38, z: 0}
+  m_LocalPosition: {x: -25.2, y: 5.38, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -186,8 +186,8 @@ CircleCollider2D:
   m_UsedByEffector: 0
   m_CompositeOperation: 0
   m_CompositeOrder: 0
-  m_Offset: {x: 35.562927, y: 0}
-  m_Radius: 36.062927
+  m_Offset: {x: 25.848007, y: 0}
+  m_Radius: 45.777847
 --- !u!114 &27188355
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -200,48 +200,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b97d91136fa944e42bb7247d16b199fc, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  OnPlayerEnter:
-    m_PersistentCalls:
-      m_Calls:
-      - m_Target: {fileID: 1624087951}
-        m_TargetAssemblyTypeName: F_BossController, Assembly-CSharp
-        m_MethodName: OnPlayerEnterTrackingRange
-        m_Mode: 1
-        m_Arguments:
-          m_ObjectArgument: {fileID: 0}
-          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
-          m_IntArgument: 0
-          m_FloatArgument: 0
-          m_StringArgument: 
-          m_BoolArgument: 0
-        m_CallState: 2
-      - m_Target: {fileID: 2040549905}
-        m_TargetAssemblyTypeName: BossHealthUI, Assembly-CSharp
-        m_MethodName: Show
-        m_Mode: 1
-        m_Arguments:
-          m_ObjectArgument: {fileID: 0}
-          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
-          m_IntArgument: 0
-          m_FloatArgument: 0
-          m_StringArgument: 
-          m_BoolArgument: 0
-        m_CallState: 2
-  OnPlayerExit:
-    m_PersistentCalls:
-      m_Calls:
-      - m_Target: {fileID: 1624087951}
-        m_TargetAssemblyTypeName: F_BossController, Assembly-CSharp
-        m_MethodName: OnPlayerExitTrackingRange
-        m_Mode: 1
-        m_Arguments:
-          m_ObjectArgument: {fileID: 0}
-          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
-          m_IntArgument: 0
-          m_FloatArgument: 0
-          m_StringArgument: 
-          m_BoolArgument: 0
-        m_CallState: 2
+  zoneType: 0
 --- !u!1 &55870567
 GameObject:
   m_ObjectHideFlags: 0
@@ -413,9 +372,9 @@ Transform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
-  - {fileID: 678137630}
-  - {fileID: 2067889923}
   - {fileID: 719253012}
+  - {fileID: 2067889923}
+  - {fileID: 678137630}
   m_Father: {fileID: 1624087947}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &184433782
@@ -493,6 +452,98 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 184433782}
   m_CullTransparentMesh: 1
+--- !u!1 &230886030
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 230886031}
+  - component: {fileID: 230886032}
+  - component: {fileID: 230886034}
+  m_Layer: 0
+  m_Name: BackStepZone
+  m_TagString: Detection
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &230886031
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 230886030}
+  serializedVersion: 2
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: -5.33, y: 5.1, z: 0}
+  m_LocalScale: {x: 1.7365187, y: 1.6313, z: 1.6313}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 1538097717}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &230886032
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 230886030}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b97d91136fa944e42bb7247d16b199fc, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  zoneType: 2
+--- !u!61 &230886034
+BoxCollider2D:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 230886030}
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Density: 1
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_ForceSendLayers:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  m_ForceReceiveLayers:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  m_ContactCaptureLayers:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  m_CallbackLayers:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  m_IsTrigger: 1
+  m_UsedByEffector: 0
+  m_CompositeOperation: 0
+  m_CompositeOrder: 0
+  m_Offset: {x: 3.9848275, y: 0.99504423}
+  m_SpriteTilingProperty:
+    border: {x: 0, y: 0, z: 0, w: 0}
+    pivot: {x: 0, y: 0}
+    oldSize: {x: 0, y: 0}
+    newSize: {x: 0, y: 0}
+    adaptiveTilingThreshold: 0
+    drawMode: 0
+    adaptiveTiling: 0
+  m_AutoTiling: 0
+  m_Size: {x: 4.607477, y: 7.8231535}
+  m_EdgeRadius: 0
 --- !u!1 &312503202
 GameObject:
   m_ObjectHideFlags: 0
@@ -764,7 +815,7 @@ BoxCollider2D:
   m_UsedByEffector: 0
   m_CompositeOperation: 0
   m_CompositeOrder: 0
-  m_Offset: {x: -5.339513, y: 4.72677}
+  m_Offset: {x: -4.9686275, y: 4.72677}
   m_SpriteTilingProperty:
     border: {x: 0, y: 0, z: 0, w: 0}
     pivot: {x: 0.3, y: 0}
@@ -774,7 +825,7 @@ BoxCollider2D:
     drawMode: 0
     adaptiveTiling: 0
   m_AutoTiling: 0
-  m_Size: {x: 7.507036, y: 9.438542}
+  m_Size: {x: 6.7652655, y: 9.438542}
   m_EdgeRadius: 0
 --- !u!50 &678137632
 Rigidbody2D:
@@ -899,9 +950,9 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 719253011}
   serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: -1.512706, y: 1.3224, z: 1}
+  m_LocalScale: {x: -1.5127062, y: 1.3224, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 126329996}
@@ -940,7 +991,7 @@ BoxCollider2D:
   m_UsedByEffector: 0
   m_CompositeOperation: 0
   m_CompositeOrder: 0
-  m_Offset: {x: -0.5635319, y: 5.142213}
+  m_Offset: {x: -0.47780228, y: 4.521108}
   m_SpriteTilingProperty:
     border: {x: 0, y: 0, z: 0, w: 0}
     pivot: {x: 0.5, y: 0}
@@ -950,7 +1001,7 @@ BoxCollider2D:
     drawMode: 0
     adaptiveTiling: 0
   m_AutoTiling: 0
-  m_Size: {x: 18.328552, y: 2.9723568}
+  m_Size: {x: 19.757412, y: 4.214566}
   m_EdgeRadius: 0
 --- !u!50 &719253014
 Rigidbody2D:
@@ -1060,7 +1111,7 @@ GameObject:
   - component: {fileID: 795183046}
   m_Layer: 0
   m_Name: TM_Wall(2)
-  m_TagString: Ground
+  m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -1283,7 +1334,7 @@ Transform:
   m_GameObject: {fileID: 888517653}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: -11.03, y: 5.1, z: 0}
+  m_LocalPosition: {x: -11.35, y: 5.1, z: 0}
   m_LocalScale: {x: 1.7365187, y: 1.6313, z: 1.6313}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -1323,8 +1374,8 @@ CircleCollider2D:
   m_UsedByEffector: 0
   m_CompositeOperation: 0
   m_CompositeOrder: 0
-  m_Offset: {x: 6.2759953, y: 0}
-  m_Radius: 6.7759953
+  m_Offset: {x: 7.177229, y: 0}
+  m_Radius: 7.677229
 --- !u!114 &888517656
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1337,36 +1388,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b97d91136fa944e42bb7247d16b199fc, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  OnPlayerEnter:
-    m_PersistentCalls:
-      m_Calls:
-      - m_Target: {fileID: 1624087951}
-        m_TargetAssemblyTypeName: F_BossController, Assembly-CSharp
-        m_MethodName: OnPlayerEnterAttackRange
-        m_Mode: 1
-        m_Arguments:
-          m_ObjectArgument: {fileID: 0}
-          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
-          m_IntArgument: 0
-          m_FloatArgument: 0
-          m_StringArgument: 
-          m_BoolArgument: 0
-        m_CallState: 2
-  OnPlayerExit:
-    m_PersistentCalls:
-      m_Calls:
-      - m_Target: {fileID: 1624087951}
-        m_TargetAssemblyTypeName: F_BossController, Assembly-CSharp
-        m_MethodName: OnPlayerExitAttackRange
-        m_Mode: 1
-        m_Arguments:
-          m_ObjectArgument: {fileID: 0}
-          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
-          m_IntArgument: 0
-          m_FloatArgument: 0
-          m_StringArgument: 
-          m_BoolArgument: 0
-        m_CallState: 2
+  zoneType: 1
 --- !u!1 &971259907
 GameObject:
   m_ObjectHideFlags: 0
@@ -1380,7 +1402,7 @@ GameObject:
   - component: {fileID: 971259908}
   m_Layer: 0
   m_Name: TM_Wall(1)
-  m_TagString: Ground
+  m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -1775,7 +1797,7 @@ Transform:
   m_GameObject: {fileID: 1441428357}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: -53.6, y: 11, z: 0}
+  m_LocalPosition: {x: -60.11, y: 11, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -1859,8 +1881,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   moveSpeed: 10
   jumpForce: 15
-  parryStartupTime: 0.25
-  parryWindow: 0.3
+  parryStartupTime: 0.08
+  parryWindow: 0.25
   parryCooldown: 1
   parrySuccessSound: {fileID: 8300000, guid: 2cdda754db412c44eadb2d9174771ef4, type: 3}
 --- !u!82 &1441428363
@@ -2163,6 +2185,7 @@ Transform:
   m_Children:
   - {fileID: 27188353}
   - {fileID: 888517654}
+  - {fileID: 230886031}
   m_Father: {fileID: 1624087947}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1619823672
@@ -2482,10 +2505,12 @@ MonoBehaviour:
   playerTransform: {fileID: 1441428359}
   bossHealthUI: {fileID: 2040549905}
   spriteFacesLeft: 0
-  moveSpeed: 5
+  moveSpeed: 10
   chargeSpeed: 15
-  actionCooldown: 2
+  actionCooldown: 0.8
   stoppingDistance: 13
+  backstepCooldown: 3
+  backstepDistance: 14
   normalAttackHitbox: {fileID: 0}
   pierceAttackHitbox: {fileID: 0}
   normalAttackSound: {fileID: 8300000, guid: f656109deb806d2498acf46c8e2b0495, type: 3}
@@ -3070,7 +3095,7 @@ BoxCollider2D:
   m_UsedByEffector: 0
   m_CompositeOperation: 0
   m_CompositeOrder: 0
-  m_Offset: {x: -6.8547316, y: 7.579232}
+  m_Offset: {x: -8.103661, y: 7.579232}
   m_SpriteTilingProperty:
     border: {x: 0, y: 0, z: 0, w: 0}
     pivot: {x: 1, y: -0.5}
@@ -3080,7 +3105,7 @@ BoxCollider2D:
     drawMode: 0
     adaptiveTiling: 0
   m_AutoTiling: 0
-  m_Size: {x: 12.737108, y: 3.5386906}
+  m_Size: {x: 15.234963, y: 3.5386906}
   m_EdgeRadius: 0
 --- !u!50 &2067889925
 Rigidbody2D:
