@@ -440,36 +440,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b97d91136fa944e42bb7247d16b199fc, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  OnPlayerEnter:
-    m_PersistentCalls:
-      m_Calls:
-      - m_Target: {fileID: 1207188973}
-        m_TargetAssemblyTypeName: F_BossController, Assembly-CSharp
-        m_MethodName: OnPlayerEnterAttackRange
-        m_Mode: 1
-        m_Arguments:
-          m_ObjectArgument: {fileID: 0}
-          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
-          m_IntArgument: 0
-          m_FloatArgument: 0
-          m_StringArgument: 
-          m_BoolArgument: 0
-        m_CallState: 2
-  OnPlayerExit:
-    m_PersistentCalls:
-      m_Calls:
-      - m_Target: {fileID: 1207188973}
-        m_TargetAssemblyTypeName: F_BossController, Assembly-CSharp
-        m_MethodName: OnPlayerExitAttackRange
-        m_Mode: 1
-        m_Arguments:
-          m_ObjectArgument: {fileID: 0}
-          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
-          m_IntArgument: 0
-          m_FloatArgument: 0
-          m_StringArgument: 
-          m_BoolArgument: 0
-        m_CallState: 2
+  zoneType: 0
 --- !u!58 &260951538
 CircleCollider2D:
   m_ObjectHideFlags: 0
@@ -821,12 +792,15 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   playerTransform: {fileID: 1549466671}
+  bossHealthUI: {fileID: 0}
   spriteFacesLeft: 1
-  health: 50
   moveSpeed: 2
   chargeSpeed: 8
   actionCooldown: 1.5
   stoppingDistance: 2
+  backstepCooldown: 6
+  backstepSpeed: 12
+  backstepAnimation: {fileID: 0}
   normalAttackHitbox: {fileID: 0}
   pierceAttackHitbox: {fileID: 0}
   normalAttackSound: {fileID: 0}
@@ -1043,36 +1017,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b97d91136fa944e42bb7247d16b199fc, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  OnPlayerEnter:
-    m_PersistentCalls:
-      m_Calls:
-      - m_Target: {fileID: 476264583}
-        m_TargetAssemblyTypeName: F_BossController, Assembly-CSharp
-        m_MethodName: OnPlayerEnterTrackingRange
-        m_Mode: 1
-        m_Arguments:
-          m_ObjectArgument: {fileID: 0}
-          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
-          m_IntArgument: 0
-          m_FloatArgument: 0
-          m_StringArgument: 
-          m_BoolArgument: 0
-        m_CallState: 2
-  OnPlayerExit:
-    m_PersistentCalls:
-      m_Calls:
-      - m_Target: {fileID: 476264583}
-        m_TargetAssemblyTypeName: F_BossController, Assembly-CSharp
-        m_MethodName: OnPlayerExitTrackingRange
-        m_Mode: 1
-        m_Arguments:
-          m_ObjectArgument: {fileID: 0}
-          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
-          m_IntArgument: 0
-          m_FloatArgument: 0
-          m_StringArgument: 
-          m_BoolArgument: 0
-        m_CallState: 2
+  zoneType: 0
 --- !u!58 &576165961
 CircleCollider2D:
   m_ObjectHideFlags: 0
@@ -1274,36 +1219,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b97d91136fa944e42bb7247d16b199fc, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  OnPlayerEnter:
-    m_PersistentCalls:
-      m_Calls:
-      - m_Target: {fileID: 476264583}
-        m_TargetAssemblyTypeName: F_BossController, Assembly-CSharp
-        m_MethodName: OnPlayerEnterAttackRange
-        m_Mode: 1
-        m_Arguments:
-          m_ObjectArgument: {fileID: 0}
-          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
-          m_IntArgument: 0
-          m_FloatArgument: 0
-          m_StringArgument: 
-          m_BoolArgument: 0
-        m_CallState: 2
-  OnPlayerExit:
-    m_PersistentCalls:
-      m_Calls:
-      - m_Target: {fileID: 476264583}
-        m_TargetAssemblyTypeName: F_BossController, Assembly-CSharp
-        m_MethodName: OnPlayerExitAttackRange
-        m_Mode: 1
-        m_Arguments:
-          m_ObjectArgument: {fileID: 0}
-          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
-          m_IntArgument: 0
-          m_FloatArgument: 0
-          m_StringArgument: 
-          m_BoolArgument: 0
-        m_CallState: 2
+  zoneType: 0
 --- !u!58 &954062292
 CircleCollider2D:
   m_ObjectHideFlags: 0
@@ -1495,12 +1411,15 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   playerTransform: {fileID: 0}
+  bossHealthUI: {fileID: 0}
   spriteFacesLeft: 1
-  health: 50
   moveSpeed: 10
   chargeSpeed: 15
   actionCooldown: 2
   stoppingDistance: 2
+  backstepCooldown: 6
+  backstepSpeed: 12
+  backstepAnimation: {fileID: 0}
   normalAttackHitbox: {fileID: 0}
   pierceAttackHitbox: {fileID: 0}
   normalAttackSound: {fileID: 0}
@@ -2160,36 +2079,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b97d91136fa944e42bb7247d16b199fc, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  OnPlayerEnter:
-    m_PersistentCalls:
-      m_Calls:
-      - m_Target: {fileID: 1207188973}
-        m_TargetAssemblyTypeName: F_BossController, Assembly-CSharp
-        m_MethodName: OnPlayerEnterTrackingRange
-        m_Mode: 1
-        m_Arguments:
-          m_ObjectArgument: {fileID: 0}
-          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
-          m_IntArgument: 0
-          m_FloatArgument: 0
-          m_StringArgument: 
-          m_BoolArgument: 0
-        m_CallState: 2
-  OnPlayerExit:
-    m_PersistentCalls:
-      m_Calls:
-      - m_Target: {fileID: 1207188973}
-        m_TargetAssemblyTypeName: F_BossController, Assembly-CSharp
-        m_MethodName: OnPlayerExitTrackingRange
-        m_Mode: 1
-        m_Arguments:
-          m_ObjectArgument: {fileID: 0}
-          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
-          m_IntArgument: 0
-          m_FloatArgument: 0
-          m_StringArgument: 
-          m_BoolArgument: 0
-        m_CallState: 2
+  zoneType: 0
 --- !u!58 &1483129549
 CircleCollider2D:
   m_ObjectHideFlags: 0
@@ -3007,7 +2897,7 @@ SpriteRenderer:
   m_SortingLayerID: 1637454003
   m_SortingLayer: 1
   m_SortingOrder: 0
-  m_Sprite: {fileID: 21300000, guid: 8b203b31c7dc60246a63311eac6f79f2, type: 3}
+  m_Sprite: {fileID: 21300000, guid: 085f2ad909a16ac44bb71cb4b99b87ed, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 0
   m_FlipY: 0
@@ -3027,7 +2917,7 @@ Transform:
   m_GameObject: {fileID: 1846879979}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: -0.23892021, y: 4.533245, z: 0.10590713}
+  m_LocalPosition: {x: -0.23892021, y: 5.1, z: 0.10590713}
   m_LocalScale: {x: 1.9464337, y: 1.6067777, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
