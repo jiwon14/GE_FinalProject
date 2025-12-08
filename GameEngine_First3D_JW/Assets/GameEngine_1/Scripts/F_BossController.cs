@@ -56,6 +56,10 @@ public class F_BossController : MonoBehaviour
     private float directionSwitchTimer = 0f;
 
     private readonly int AttackAnimID = Animator.StringToHash("AttackAnimID");
+    // Integer 대신 Trigger를 사용하도록 변경
+    private readonly int Attack1TriggerID = Animator.StringToHash("Attack1"); // Attack1 Trigger
+    private readonly int Attack3TriggerID = Animator.StringToHash("Attack3");
+    private readonly int Attack4TriggerID = Animator.StringToHash("Attack4"); // Attack4 Trigger 추가
     private readonly int IsWalkingAnimID = Animator.StringToHash("isWalking");
     private readonly int StunAnimID = Animator.StringToHash("Stun");
     private readonly int DieAnimID = Animator.StringToHash("Die");
@@ -189,11 +193,25 @@ public class F_BossController : MonoBehaviour
         moveDirection = Vector2.zero; 
         animator.SetBool(IsWalkingAnimID, false); 
 
-        int actionChoice = Random.Range(1, 4); 
-        animator.SetInteger(AttackAnimID, actionChoice);
+        // Attack1, Attack3, Attack4 중에서 랜덤으로 하나를 선택합니다.
+        int[] attackChoices = { 1, 3, 4 };
+        int choiceIndex = Random.Range(0, attackChoices.Length);
+        int chosenAttack = attackChoices[choiceIndex];
 
-        if (actionChoice == 2) StartCoroutine(PierceAttackMovementRoutine());
-        
+        // 선택된 공격에 따라 적절한 Trigger를 발동시킵니다.
+        switch (chosenAttack)
+        {
+            case 1: // Attack1
+                animator.SetTrigger(Attack1TriggerID);
+                break;
+            case 3: // Attack3
+                animator.SetTrigger(Attack3TriggerID);
+                break;
+            case 4: // Attack4
+                animator.SetTrigger(Attack4TriggerID);
+                break;
+        }
+
         // 안전장치: 4초 뒤에도 공격 상태면 강제 종료 (죽었을 땐 실행 안 됨)
         StartCoroutine(ForceFinishAttackRoutine(4.0f));
     }
@@ -220,7 +238,6 @@ public class F_BossController : MonoBehaviour
 
         // 5. 애니메이션 정리 (걷기 끄기, 공격 끄기, 죽음 켜기)
         animator.SetBool(IsWalkingAnimID, false);
-        animator.SetInteger(AttackAnimID, 0);
         animator.SetTrigger(DieAnimID);
 
         // 6. 삭제 대기
@@ -265,7 +282,6 @@ public class F_BossController : MonoBehaviour
 
         StopCoroutine("ForceFinishAttackRoutine");
         AnimationEvent_DeactivateAllHitboxes(); 
-        animator.SetInteger(AttackAnimID, 0); 
         animator.SetBool(IsWalkingAnimID, false); 
         lastActionTime = Time.time; 
         SetState(BossState.Deciding);
@@ -287,7 +303,6 @@ public class F_BossController : MonoBehaviour
         if (currentState == BossState.Dead) return; // 죽었으면 스턴 X
 
         StopAllCoroutines(); 
-        animator.SetInteger(AttackAnimID, 0);
         StartCoroutine(StunRoutine());
     }
 
