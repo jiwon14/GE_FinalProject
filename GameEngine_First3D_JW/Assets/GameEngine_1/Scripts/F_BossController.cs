@@ -6,7 +6,7 @@ public class F_BossController : MonoBehaviour
 {
     private enum BossState
     {
-        Idle, Deciding, Attacking, Piercing, Stunned, Dead, Backstepping
+        Idle, Deciding, Attacking, Piercing, Stunned, Dead, Backstepping, Dashing
     }
 
     [Header("참조")]
@@ -25,7 +25,7 @@ public class F_BossController : MonoBehaviour
 
     [Header("백스텝")]
     public float backstepCooldown = 6.0f; // 백스텝 쿨타임
-    public float backstepSpeed = 12.0f; // 백스텝 속도 (moveSpeed의 3배)
+    public float backstepSpeed = 20.0f; // 백스텝 속도 (moveSpeed의 3배)
     public AnimationClip backstepAnimation; // 백스텝 애니메이션 클립 참조
     
     [Header("공격 판정")]
@@ -44,6 +44,13 @@ public class F_BossController : MonoBehaviour
     public float pierceForwardSpeed = 10.0f;    
     public float pierceBackwardPause = 0.2f;    
     
+    [Header("돌진 패턴")]
+    public float dashTriggerTime = 1.5f; // 이 시간 이상 공격 범위 밖에 있으면 돌진
+    public float dashCooldown = 7.0f;    // 돌진 쿨타임
+    public float dashSpeed = 55f;        // 돌진 속도
+    public float dashDuration = 0.7f;    // 돌진 지속 시간
+    public float postDashDelay = 0.3f;   // 돌진 후 다른 행동까지의 딜레이
+
     private Rigidbody2D rb;
     private SpriteRenderer spriteRenderer;
     private AudioSource audioSource;
@@ -53,14 +60,19 @@ public class F_BossController : MonoBehaviour
     private bool isPlayerInAttackRange = false;
     private bool isPlayerInBackstepRange = false; // 백스텝 존 감지 플래그
     private float lastActionTime = 0f;
-    private float lastBackstepTime = -99f; // 마지막 백스텝 시간
+    private float lastBackstepTime = -99f; // 마지막 백스텝 시간    
+    private float lastDashTime = -99f; // 마지막 돌진 시간
+    private float timeOutsideAttackRange = 0f; // 플레이어가 공격 범위 밖에 머무른 시간
     
     private CapsuleCollider2D capsuleCollider;    
+    private Vector2 dashDirection = Vector2.zero;
+    private bool isDashMoving = false; // 돌진 중 실제 이동 플래그
     private Vector2 moveDirection = Vector2.zero; 
     private Animator animator;
     
     private float timeToSwitchDirection = 0.2f; 
     private float directionSwitchTimer = 0f;
+    private bool isDirectionLocked = false; // 방향 전환 잠금 플래그
 
     private readonly int AttackAnimID = Animator.StringToHash("AttackAnimID");
     // Integer 대신 Trigger를 사용하도록 변경
@@ -68,6 +80,7 @@ public class F_BossController : MonoBehaviour
     private readonly int Attack3TriggerID = Animator.StringToHash("Attack3");
     private readonly int Attack4TriggerID = Animator.StringToHash("Attack4"); // Attack4 Trigger 추가
     private readonly int IsWalkingAnimID = Animator.StringToHash("isWalking");
+    private readonly int DoDashTriggerID = Animator.StringToHash("doDash"); // 돌진용 Trigger
     private readonly int DoBackstepTriggerID = Animator.StringToHash("doBackstep"); // 백스텝용 Trigger
     private readonly int StunAnimID = Animator.StringToHash("Stun");
     private readonly int DieAnimID = Animator.StringToHash("Die");
@@ -93,14 +106,33 @@ public class F_BossController : MonoBehaviour
         // [철벽 방어 1] 죽었으면 Update 로직 아예 실행 X
         if (currentState == BossState.Dead || currentState == BossState.Stunned) return;
 
+        // 플레이어가 추적 범위 안에 있지만 공격 범위 밖에 있는 시간 계산
+        if (isPlayerInTrackingRange && !isPlayerInAttackRange)
+        {
+            timeOutsideAttackRange += Time.deltaTime;
+        }
+        else
+        {
+            timeOutsideAttackRange = 0f;
+        }
+
         // [최우선 순위] 다른 행동 중이 아닐 때, 플레이어가 너무 가까우면 백스텝 시도
-        if (currentState != BossState.Attacking && currentState != BossState.Piercing && currentState != BossState.Backstepping &&
+        if (currentState != BossState.Attacking && currentState != BossState.Piercing && currentState != BossState.Backstepping && currentState != BossState.Dashing &&
             isPlayerInBackstepRange &&
             Time.time >= lastBackstepTime + backstepCooldown)
         {
             SetState(BossState.Backstepping);
             // 백스텝이 발동되면, 이번 프레임의 다른 모든 Update 로직(공격 결정 등)을 건너뜁니다.
             return;
+        }
+
+        // [우선 순위 2] 플레이어가 공격 범위 밖에 오래 머무르면 돌진
+        if (currentState == BossState.Deciding &&
+            timeOutsideAttackRange >= dashTriggerTime &&
+            Time.time >= lastDashTime + dashCooldown)
+        {
+            SetState(BossState.Dashing);
+            return; // 돌진이 발동되면 다른 로직을 건너뜁니다.
         }
 
         switch (currentState)
@@ -146,6 +178,10 @@ public class F_BossController : MonoBehaviour
                 // 이 상태에서는 애니메이션이 끝날 때까지 아무것도 하지 않고 기다립니다.
                 // 모든 이동과 상태 변경은 애니메이션 이벤트가 처리합니다.
                 break;
+
+            case BossState.Dashing:
+                // 돌진 중에는 DashRoutine 코루틴이 모든 것을 제어합니다.
+                break;
         }
     }
 
@@ -160,6 +196,11 @@ public class F_BossController : MonoBehaviour
         {
             // 백스텝 상태일 때만 뒤로 물러나는 움직임을 처리합니다.
             rb.linearVelocity = new Vector2(moveDirection.x * backstepSpeed, rb.linearVelocity.y);
+        }
+        else if (currentState == BossState.Dashing && isDashMoving) // isDashMoving 플래그가 true일 때만 이동
+        {
+            // 돌진 상태이고, 실제 이동 신호를 받았을 때만 앞으로 돌진합니다.
+            rb.linearVelocity = new Vector2(dashDirection.x * dashSpeed, rb.linearVelocity.y);
         }
         // 다른 상태(Idle, Attacking 등)에서는 FixedUpdate에서 속도를 제어하지 않습니다.
         // SetState에서 속도를 0으로 만듭니다.
@@ -211,12 +252,29 @@ public class F_BossController : MonoBehaviour
                 animator.SetTrigger(DoBackstepTriggerID);
                 StartCoroutine(BackstepDurationRoutine());
                 break;
+
+            case BossState.Dashing:
+                // 돌진 시작 시, 즉시 플레이어를 바라보게 합니다.
+                if (playerTransform != null)
+                {
+                    bool isPlayerRight = (playerTransform.position.x - transform.position.x) > 0;
+                    ApplyScale(isPlayerRight);
+                    // 돌진 방향 설정
+                    dashDirection = new Vector2(isPlayerRight ? 1f : -1f, 0);
+                }
+                
+                timeOutsideAttackRange = 0f; // 돌진을 시작했으므로 타이머 초기화
+                isDashMoving = false; // 실제 이동 플래그 초기화
+                isDirectionLocked = true; // 돌진 시작 시 방향 고정
+                animator.SetTrigger(DoDashTriggerID);
+                StartCoroutine(DashRoutine());
+                break;
         }
     }
 
     void FacePlayer()
     {
-        if (playerTransform == null) return;
+        if (playerTransform == null || isDirectionLocked) return; // 방향이 고정되어 있으면 실행하지 않음
         float directionToPlayer = playerTransform.position.x - transform.position.x;
         bool isPlayerRight = directionToPlayer > 0;
         bool isFacingRight;
@@ -364,6 +422,17 @@ public class F_BossController : MonoBehaviour
         // 이중 호출을 막기 위해 비워둡니다.
     }
 
+    /// <summary>
+    /// 애니메이션 이벤트에서 호출되어 실제 돌진 이동을 시작합니다.
+    /// </summary>
+    public void AnimationEvent_StartDashMovement()
+    {
+        if (currentState == BossState.Dashing)
+        {
+            isDashMoving = true;
+        }
+    }
+
     private IEnumerator BackstepDurationRoutine()
     {
         // 1. [핵심 수정] 애니메이션 클립의 실제 길이를 가져와서 그 시간만큼만 이동 및 대기합니다.
@@ -410,10 +479,39 @@ public class F_BossController : MonoBehaviour
     
     public void GetStunned()
     {
-        if (currentState == BossState.Dead) return; // 죽었으면 스턴 X
+        if (currentState == BossState.Dead || currentState == BossState.Dashing) return; // 죽었거나 돌진 중이면 스턴(패링)에 걸리지 않음
 
         StopAllCoroutines(); 
         StartCoroutine(StunRoutine());
+    }
+
+    private IEnumerator DashRoutine()
+    {
+        // 1. 애니메이션 이벤트가 isDashMoving을 true로 바꿀 때까지 대기합니다.
+        //    (혹은 스턴 등으로 상태가 바뀌면 즉시 종료)
+        yield return new WaitUntil(() => isDashMoving || currentState != BossState.Dashing);
+
+        // 2. 상태가 Dashing이 아니게 되었다면(예: 스턴), 코루틴을 즉시 종료합니다.
+        if (currentState != BossState.Dashing) yield break;
+
+        // 3. 실제 돌진 이동이 시작되었으므로, dashDuration 만큼 대기합니다.
+        yield return new WaitForSeconds(dashDuration);
+
+        // 4. 돌진 시간이 끝나면, 이동을 멈춥니다.
+        isDashMoving = false;
+        rb.linearVelocity = Vector2.zero;
+
+        // 5. 돌진 후딜레이 시간만큼 추가로 대기합니다.
+        yield return new WaitForSeconds(postDashDelay);
+
+        // 6. 모든 과정이 끝났는지 최종 확인합니다.
+        if (currentState == BossState.Dashing)
+        {
+            lastDashTime = Time.time;
+            lastActionTime = Time.time - actionCooldown; // 다음 행동 쿨타임 초기화
+            isDirectionLocked = false; // 방향 고정 해제
+            SetState(BossState.Deciding);
+        }
     }
 
     private IEnumerator StunRoutine()
