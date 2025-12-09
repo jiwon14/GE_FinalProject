@@ -286,6 +286,7 @@ GameObject:
   - component: {fileID: 309412240}
   - component: {fileID: 309412242}
   - component: {fileID: 309412241}
+  - component: {fileID: 309412243}
   m_Layer: 0
   m_Name: Close
   m_TagString: Detection
@@ -367,6 +368,20 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   zoneType: 2
+  bossController: {fileID: 0}
+--- !u!114 &309412243
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 309412239}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 63f0dd0edb2f3f24ea7295fe34a7006f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  zoneType: 3
 --- !u!1 &370015225
 GameObject:
   m_ObjectHideFlags: 0
@@ -412,7 +427,7 @@ GameObject:
   m_Component:
   - component: {fileID: 469110172}
   - component: {fileID: 469110174}
-  - component: {fileID: 469110173}
+  - component: {fileID: 469110175}
   m_Layer: 0
   m_Name: Long_Attack_Zone
   m_TagString: Detection
@@ -435,19 +450,6 @@ Transform:
   m_Children: []
   m_Father: {fileID: 370015226}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &469110173
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 469110171}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: edd9a06b7456ea943b818e58e43e0b63, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  zoneType: 1
 --- !u!58 &469110174
 CircleCollider2D:
   m_ObjectHideFlags: 0
@@ -484,6 +486,19 @@ CircleCollider2D:
   m_CompositeOrder: 0
   m_Offset: {x: 18.324966, y: 0}
   m_Radius: 35.514465
+--- !u!114 &469110175
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 469110171}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 63f0dd0edb2f3f24ea7295fe34a7006f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  zoneType: 1
 --- !u!1 &476264579
 GameObject:
   m_ObjectHideFlags: 0
@@ -773,19 +788,21 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 5a333828a6a81844292417b7a09ee370, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  enableDebugLogs: 1
   playerTransform: {fileID: 1549466671}
   bossHealthUI: {fileID: 0}
+  shortAttackZoneCollider: {fileID: 954062292}
+  longAttackZoneCollider: {fileID: 469110174}
   spriteFacesLeft: 0
   moveSpeed: 2
   actionCooldown: 1.5
   stoppingDistance: 3
   teleportCooldown: 10
-  teleportNearDistance: 4
-  teleportAwayDistance: 6
   teleportAnimOutDuration: 0.3
   teleportAnimInDuration: 0.3
   postTeleportDelay: 0.3
-  attackSound1: {fileID: 0}
+  attackForceFinishTime: 4
+  attackSound: {fileID: 0}
   dieSound: {fileID: 0}
 --- !u!1 &576165958
 GameObject:
@@ -865,7 +882,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 576165958}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: edd9a06b7456ea943b818e58e43e0b63, type: 3}
+  m_Script: {fileID: 11500000, guid: 63f0dd0edb2f3f24ea7295fe34a7006f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   zoneType: 0
@@ -1067,10 +1084,10 @@ MonoBehaviour:
   m_GameObject: {fileID: 954062289}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: edd9a06b7456ea943b818e58e43e0b63, type: 3}
+  m_Script: {fileID: 11500000, guid: 63f0dd0edb2f3f24ea7295fe34a7006f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  zoneType: 1
+  zoneType: 2
 --- !u!1 &1092847661
 GameObject:
   m_ObjectHideFlags: 0

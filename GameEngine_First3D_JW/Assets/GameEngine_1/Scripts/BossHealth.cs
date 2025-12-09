@@ -8,7 +8,8 @@ public class BossHealth : MonoBehaviour
     private float currentHealth;
     private bool isDead = false; // 보스가 죽었는지 확인하는 플래그
 
-    private F_BossController bossController; // F_BossController 참조 추가
+    private F_BossController f_bossController;
+    private T_BossController t_bossController;
 
     // 체력이 변경될 때 호출될 이벤트
     // 파라미터: 현재 체력, 최대 체력
@@ -16,8 +17,8 @@ public class BossHealth : MonoBehaviour
 
     void Awake()
     {
-        // 같은 게임 오브젝트에 있는 F_BossController를 찾아서 저장
-        bossController = GetComponent<F_BossController>();
+        f_bossController = GetComponent<F_BossController>();
+        t_bossController = GetComponent<T_BossController>();
         currentHealth = maxHealth;
     }
 
@@ -54,10 +55,14 @@ public class BossHealth : MonoBehaviour
     {
         isDead = true; // 사망 상태로 변경
 
-        // F_BossController의 사망 처리 함수를 호출
-        if (bossController != null)
+        // 연결된 보스 컨트롤러의 Die 함수를 호출
+        if (f_bossController != null)
         {
-            bossController.Die();
+            f_bossController.Die();
+        }
+        else if (t_bossController != null)
+        {
+            t_bossController.Die();
         }
     }
 
