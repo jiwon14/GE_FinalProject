@@ -27,7 +27,7 @@ public class BossHealth : MonoBehaviour
         if (!isDead && currentHealth > 0 && currentHealth < maxHealth)
         {
             // 초당 0.1의 체력을 회복합니다.
-            Heal(0.1f * Time.deltaTime);
+            Heal(0.2f * Time.deltaTime);
         }
     }
 

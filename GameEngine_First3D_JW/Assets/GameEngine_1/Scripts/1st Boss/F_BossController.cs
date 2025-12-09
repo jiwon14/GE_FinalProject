@@ -49,7 +49,7 @@ public class F_BossController : MonoBehaviour
     public float dashCooldown = 7.0f;    // 돌진 쿨타임
     public float dashSpeed = 55f;        // 돌진 속도
     public float dashDuration = 0.7f;    // 돌진 지속 시간
-    public float postDashDelay = 0.3f;   // 돌진 후 다른 행동까지의 딜레이
+    public float postDashDelay = 0.5f;   // 돌진 후 다른 행동까지의 딜레이
 
     private Rigidbody2D rb;
     private SpriteRenderer spriteRenderer;
