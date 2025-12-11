@@ -12,10 +12,15 @@ public class F_PlayerController : MonoBehaviour
     public float jumpForce = 10.0f;
 
     [Header("구르기 설정 (Shift)")]
-    [SerializeField] private float rollSpeed = 8.0f;      
-    [SerializeField] private float rollDuration = 0.5f;   
+    [SerializeField] private float rollSpeed = 12.0f;      
+    [SerializeField] private float rollDuration = 0.5f;   // 구르는 시간 (이동 시간)
+    
+    [Tooltip("구르기 시작 직후 무적 유지 시간")]
     [SerializeField] private float invincibilityDuration = 0.3f; 
-    [SerializeField] private float rollCooldown = 0.8f;   
+    
+    // 후딜레이 변수 삭제됨
+    
+    [SerializeField] private float rollCooldown = 0.5f; // 구르기 끝난 후 다음 구르기까지 대기 시간
     
     private bool isRolling = false;     
     private bool isInvincible = false;  
@@ -125,37 +130,45 @@ public class F_PlayerController : MonoBehaviour
         if (collision.gameObject.CompareTag("Ground")) isGrounded = false;
     }
 
-    // --- [수정] 파란색 무적 효과 추가 ---
+    // --- [수정] 후딜레이 삭제 버전 ---
     IEnumerator RollRoutine(float direction)
     {
         canRoll = false;   
-        isRolling = true;  
+        isRolling = true;  // 조작 잠금
 
-        // 혹시 피격 중이었다면 깜빡임 중지하고 파란색이 우선되도록 정리
         if (flashRoutine != null) StopCoroutine(flashRoutine);
         
         anim.SetTrigger("doRoll");
         
-        // 1. 무적 시작 & 파란색 변신
+        // 1. [즉시 발동] 무적 & 이동 & 파란색 변신
         isInvincible = true;
-        sp.color = new Color(0.3f, 0.3f, 1f, 1f); // 너무 어두운 파랑 대신 밝은 파랑 적용
-        
+        sp.color = new Color(0.3f, 0.3f, 1f, 1f); 
         rb.linearVelocity = new Vector2(direction * rollSpeed, rb.linearVelocity.y);
 
-        // 2. 무적 시간 대기
+        // 2. 무적 시간 대기 (0.3초)
         yield return new WaitForSeconds(invincibilityDuration);
         
         // 3. 무적 종료 & 색깔 복구
         isInvincible = false;
         sp.color = defaultColor; 
 
-        float remainingTime = rollDuration - invincibilityDuration;
-        if (remainingTime > 0) yield return new WaitForSeconds(remainingTime);
+        // 4. 남은 이동 시간 대기
+        float remainingMoveTime = rollDuration - invincibilityDuration;
+        if (remainingMoveTime > 0)
+        {
+            yield return new WaitForSeconds(remainingMoveTime);
+        }
 
-        isRolling = false;
+        // 5. 이동 정지 & 조작 잠금 즉시 해제 (후딜 없음)
         rb.linearVelocity = Vector2.zero; 
-
-        yield return new WaitForSeconds(rollCooldown - rollDuration);
+        isRolling = false; // [핵심] 멈추자마자 바로 조작 가능
+        
+        // 6. 다음 구르기 쿨타임
+        if (rollCooldown > 0)
+        {
+            yield return new WaitForSeconds(rollCooldown);
+        }
+        
         canRoll = true;
     }
 
@@ -202,7 +215,7 @@ public class F_PlayerController : MonoBehaviour
 
     public void HandleAttack(int damage, GameObject attacker)
     {
-        // [1] 무적 (파란색 상태)
+        // [1] 무적 (회피 성공)
         if (isInvincible)
         {
             Debug.Log("<b>[회피!]</b>");
@@ -215,14 +228,13 @@ public class F_PlayerController : MonoBehaviour
             Debug.Log("<b>[패링 성공!]</b>");
             PlaySound(parrySuccessSound);
 
-            // F_BossController 또는 T_BossController를 처리
             var f_boss = attacker.GetComponent<F_BossController>();
             if (f_boss != null)
             {
                 int parryDamage = 10;
                 f_boss.TakeDamage(parryDamage);
                 f_boss.GetStunned();
-                return; // 처리가 끝났으므로 함수 종료
+                return;
             }
 
             var t_boss = attacker.GetComponent<T_BossController>();
@@ -231,6 +243,7 @@ public class F_PlayerController : MonoBehaviour
                 int parryDamage = 10;
                 t_boss.TakeDamage(parryDamage);
                 t_boss.GetStunned();
+                return;
             }
         }
         else // [3] 피격
