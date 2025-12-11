@@ -2058,6 +2058,10 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   moveSpeed: 10
   jumpForce: 15
+  rollSpeed: 16
+  rollDuration: 0.5
+  invincibilityDuration: 0.3
+  rollCooldown: 0.8
   parryStartupTime: 0.08
   parryWindow: 0.25
   parryCooldown: 0.01
