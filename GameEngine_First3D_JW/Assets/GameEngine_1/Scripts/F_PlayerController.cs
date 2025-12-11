@@ -214,11 +214,23 @@ public class F_PlayerController : MonoBehaviour
         {
             Debug.Log("<b>[패링 성공!]</b>");
             PlaySound(parrySuccessSound);
-            F_BossController boss = attacker.GetComponent<F_BossController>();
-            if (boss != null)
+
+            // F_BossController 또는 T_BossController를 처리
+            var f_boss = attacker.GetComponent<F_BossController>();
+            if (f_boss != null)
             {
-                boss.TakeDamage(10);
-                boss.GetStunned();
+                int parryDamage = 10;
+                f_boss.TakeDamage(parryDamage);
+                f_boss.GetStunned();
+                return; // 처리가 끝났으므로 함수 종료
+            }
+
+            var t_boss = attacker.GetComponent<T_BossController>();
+            if (t_boss != null)
+            {
+                int parryDamage = 10;
+                t_boss.TakeDamage(parryDamage);
+                t_boss.GetStunned();
             }
         }
         else // [3] 피격

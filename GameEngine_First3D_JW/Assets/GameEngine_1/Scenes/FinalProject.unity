@@ -2707,7 +2707,7 @@ MonoBehaviour:
   dashCooldown: 7
   dashSpeed: 55
   dashDuration: 0.7
-  postDashDelay: 0.3
+  postDashDelay: 0.5
 --- !u!82 &1624087952
 AudioSource:
   m_ObjectHideFlags: 0
