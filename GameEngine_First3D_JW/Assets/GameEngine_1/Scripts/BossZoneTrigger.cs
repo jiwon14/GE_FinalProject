@@ -15,7 +15,7 @@ public class BossZoneTrigger : MonoBehaviour
     void Start()
     {
         // 씬에서 보스 컨트롤러를 자동으로 찾아 연결합니다.
-        bossController = FindObjectOfType<T_BossController>();
+        bossController = FindFirstObjectByType<T_BossController>();
         if (bossController == null)
         {
             Debug.LogError("씬에 T_BossController가 없습니다! 또는 이 스크립트가 보스보다 먼저 생성되었습니다.");
