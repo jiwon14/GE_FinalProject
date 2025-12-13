@@ -225,59 +225,55 @@ public class T_BossController : MonoBehaviour
 
         // --- AI 행동 결정 로직 (우선순위 기반) ---
 
-        // 우선순위 1: 긴급 텔레포트 (규칙 D: 플레이어가 너무 가까울 때)
+        // 우선순위 1: 긴급 텔레포트 (플레이어가 너무 가까울 때) - 다른 모든 판단보다 우선
         if (isPlayerInCloseZone && canTeleport)
         {
-            if (enableDebugLogs) Debug.Log("AI 결정: 너무 가까워서 후방 텔레포트 (규칙 D)");
+            if (enableDebugLogs) Debug.Log("AI 결정: 너무 가까워서 후방 텔레포트");
             StartCoroutine(TeleportRoutine(TeleportDestination.LongZone));
             return;
         }
 
-        // 우선순위 2: 짧은 공격 (규칙 3: Short_Attack_Zone에 있을 때)
-        if (isPlayerInShortAttackZone && canPerformAction)
+        // 행동 쿨다운이 종료되었을 때만 공격/패턴 텔레포트를 고려합니다.
+        if (canPerformAction)
         {
-            if (enableDebugLogs) Debug.Log("AI 결정: 짧은 공격 (규칙 3)");
-            PerformAttack(shortAttackTriggerIDs);
-            return;
-        }
-
-        // 우선순위 3: 긴 공격 (규칙 4: Long_Attack_Zone에 있을 때)
-        if (isPlayerInLongAttackZone && !isPlayerInShortAttackZone && canPerformAction)
-        {
-            if (enableDebugLogs) Debug.Log("AI 결정: 긴 공격 (규칙 4)");
-            PerformAttack(longAttackTriggerIDs);
-            return;
-        }
-
-        // 우선순위 4: 일반 텔레포트 (규칙 A, B, C)
-        if (canTeleport)
-        {
-            // 규칙 C: Short Zone에 있을 때 (Close Zone 제외)
-            if (isPlayerInShortAttackZone)
+            // 우선순위 2: 패턴 텔레포트 (사용 가능할 때 최우선)
+            if (canTeleport)
             {
-                TeleportDestination dest = (Random.value > 0.5f) ? TeleportDestination.LongZone : TeleportDestination.ShortZone;
-                if (enableDebugLogs) Debug.Log($"AI 결정: Short Zone에서 랜덤 텔레포트 -> {dest} (규칙 C)");
+                TeleportDestination dest;
+                // 플레이어가 가까우면 멀리, 멀면 가까이 텔레포트하여 거리를 조절
+                if (isPlayerInShortAttackZone)
+                {
+                    dest = TeleportDestination.LongZone;
+                    if (enableDebugLogs) Debug.Log("AI 결정: 패턴 텔레포트 (Short -> Long)");
+                }
+                else // Long Zone에 있거나, 공격 범위 밖에 있을 때
+                {
+                    dest = TeleportDestination.ShortZone;
+                    if (enableDebugLogs) Debug.Log("AI 결정: 패턴 텔레포트 (Long/Outside -> Short)");
+                }
                 StartCoroutine(TeleportRoutine(dest));
                 return;
             }
-            // 규칙 B: Long Zone에 있을 때
-            else if (isPlayerInLongAttackZone)
+
+            // 우선순위 3: 짧은 공격 (Short_Attack_Zone에 있을 때)
+            if (isPlayerInShortAttackZone)
             {
-                if (enableDebugLogs) Debug.Log("AI 결정: Long Zone에서 Short Zone으로 텔레포트 (규칙 B)");
-                StartCoroutine(TeleportRoutine(TeleportDestination.ShortZone));
+                if (enableDebugLogs) Debug.Log("AI 결정: 짧은 공격");
+                PerformAttack(shortAttackTriggerIDs);
                 return;
             }
-            // 규칙 A: 공격 Zone 밖에 있을 때
-            else if (isPlayerInTrackingZone)
+
+            // 우선순위 4: 긴 공격 (Long_Attack_Zone에 있을 때)
+            if (isPlayerInLongAttackZone && !isPlayerInShortAttackZone)
             {
-                if (enableDebugLogs) Debug.Log("AI 결정: 공격 Zone 밖에서 Long Zone으로 텔레포트 (규칙 A)");
-                StartCoroutine(TeleportRoutine(TeleportDestination.LongZone));
+                if (enableDebugLogs) Debug.Log("AI 결정: 긴 공격");
+                PerformAttack(longAttackTriggerIDs);
                 return;
             }
         }
 
-        // 우선순위 5: 이동 (규칙 2) - 위의 어떤 행동도 하지 않을 경우
-        if (enableDebugLogs) Debug.Log("AI 결정: 이동 (규칙 2)");
+        // 우선순위 5: 이동 (기본 행동) - 위의 어떤 행동도 하지 않았을 경우 (쿨다운 중이거나, 공격 범위 밖)
+        if (enableDebugLogs) Debug.Log("AI 결정: 이동");
         HandleMovementAndFacing();
     }
 
@@ -432,6 +428,7 @@ public class T_BossController : MonoBehaviour
         yield return new WaitForSeconds(postTeleportDelay);
 
         lastTeleportTime = Time.time;
+        lastActionTime = Time.time; // 텔레포트도 하나의 행동으로 간주하여 액션 쿨다운을 적용
         SetState(BossState.Deciding);
     }
 
