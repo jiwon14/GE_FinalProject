@@ -213,7 +213,14 @@ public class F_PlayerController : MonoBehaviour
         flashRoutine = null;
     }
 
+    // 기존 시스템(F_Boss 등)과의 호환성을 위한 오버로드입니다.
     public void HandleAttack(int damage, GameObject attacker)
+    {
+        // 이 메서드를 호출하는 공격은 항상 패링 시 데미지를 입히는 것으로 간주합니다.
+        HandleAttack(damage, attacker, true);
+    }
+
+    public void HandleAttack(int damage, GameObject attacker, bool isParryDamageable)
     {
         // [1] 무적 (회피 성공)
         if (isInvincible)
@@ -222,28 +229,38 @@ public class F_PlayerController : MonoBehaviour
             return;
         }
 
-        // [2] 패링
+        // [2] 패링 성공
         if (isParryActive) 
         {
             Debug.Log("<b>[패링 성공!]</b>");
             PlaySound(parrySuccessSound);
 
-            var f_boss = attacker.GetComponent<F_BossController>();
-            if (f_boss != null)
+            // 패링 시 데미지를 입히는 공격인지 확인합니다.
+            if (isParryDamageable)
             {
-                int parryDamage = 10;
-                f_boss.TakeDamage(parryDamage);
-                f_boss.GetStunned();
-                return;
-            }
+                var f_boss = attacker.GetComponent<F_BossController>();
+                if (f_boss != null)
+                {
+                    int parryDamage = 10;
+                    f_boss.TakeDamage(parryDamage);
+                    f_boss.GetStunned();
+                    return;
+                }
 
-            var t_boss = attacker.GetComponent<T_BossController>();
-            if (t_boss != null)
+                var t_boss = attacker.GetComponent<T_BossController>();
+                if (t_boss != null)
+                {
+                    Debug.Log("근접/특수 공격 패링! 보스에게 데미지와 스턴 적용.");
+                    int parryDamage = 10;
+                    t_boss.TakeDamage(parryDamage);
+                    t_boss.GetStunned();
+                    return;
+                }
+            }
+            else // isParryDamageable == false
             {
-                int parryDamage = 10;
-                t_boss.TakeDamage(parryDamage);
-                t_boss.GetStunned();
-                return;
+                Debug.Log("원거리/일반 공격 패링! 공격만 막아냅니다.");
+                return; // 데미지 없이 공격만 막고 함수 종료
             }
         }
         else // [3] 피격

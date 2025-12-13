@@ -1,12 +1,9 @@
 using UnityEngine;
 
-/// <summary>
-/// 보스의 각 Zone에 부착하여 플레이어의 진입/이탈을 T_BossController에 알려주는 스크립트입니다.
-/// </summary>
 [RequireComponent(typeof(Collider2D))]
 public class BossZoneTrigger : MonoBehaviour
 {
-    public enum ZoneType { Tracking, LongAttack, ShortAttack, Close }
+    public enum ZoneType { Tracking, LongAttack, ShortAttack }
     [Tooltip("이 Zone의 역할을 선택하세요.")]
     public ZoneType zoneType;
 
@@ -32,7 +29,6 @@ public class BossZoneTrigger : MonoBehaviour
                 case ZoneType.Tracking: bossController.OnPlayerEnterTrackingZone(); break;
                 case ZoneType.LongAttack: bossController.OnPlayerEnterLongAttackZone(); break;
                 case ZoneType.ShortAttack: bossController.OnPlayerEnterShortAttackZone(); break;
-                case ZoneType.Close: bossController.OnPlayerEnterCloseZone(); break;
             }
         }
     }
@@ -47,7 +43,6 @@ public class BossZoneTrigger : MonoBehaviour
                 case ZoneType.Tracking: bossController.OnPlayerExitTrackingZone(); break;
                 case ZoneType.LongAttack: bossController.OnPlayerExitLongAttackZone(); break;
                 case ZoneType.ShortAttack: bossController.OnPlayerExitShortAttackZone(); break;
-                case ZoneType.Close: bossController.OnPlayerExitCloseZone(); break;
             }
         }
     }

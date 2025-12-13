@@ -2064,7 +2064,7 @@ MonoBehaviour:
   rollCooldown: 0.8
   parryStartupTime: 0.08
   parryWindow: 0.25
-  parryCooldown: 2.5
+  parryCooldown: 1
   parrySuccessSound: {fileID: 8300000, guid: 2cdda754db412c44eadb2d9174771ef4, type: 3}
 --- !u!82 &1441428363
 AudioSource:

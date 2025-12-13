@@ -667,6 +667,7 @@ GameObject:
   - component: {fileID: 476264584}
   - component: {fileID: 476264586}
   - component: {fileID: 476264587}
+  - component: {fileID: 476264588}
   m_Layer: 3
   m_Name: Boss3
   m_TagString: Boss
@@ -950,13 +951,35 @@ MonoBehaviour:
   moveSpeed: 2
   actionCooldown: 1.5
   stoppingDistance: 3
-  teleportCooldown: 10
+  retreatTeleportChance: 0.4
+  attackPatterns: []
+  attackForceFinishTime: 4
+  dashAttackSpeed: 15
+  dashAttackDuration: 0.5
+  attackSound: {fileID: 0}
+  dieSound: {fileID: 0}
+  bossBgm: {fileID: 0}
+  soundEffects: []
   teleportAnimOutDuration: 0.3
   teleportAnimInDuration: 0.3
   postTeleportDelay: 0.3
-  attackForceFinishTime: 4
-  attackSound: {fileID: 0}
-  dieSound: {fileID: 0}
+  combatTeleportChance: 0.3
+  teleportBehindChance: 0.5
+  teleportBehindPlayerOffset: 3
+  minTeleportPlayerDistance: 4
+--- !u!114 &476264588
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 476264579}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3c8e01f69ffa50247822c1c32c941751, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  maxHealth: 1000
 --- !u!1 &576165958
 GameObject:
   m_ObjectHideFlags: 0

@@ -31,7 +31,7 @@ AnimationClip:
         inWeight: 0
         outWeight: 0
       - serializedVersion: 3
-        time: 0.33333334
+        time: 0.41666666
         value: 1
         inSlope: Infinity
         outSlope: Infinity
@@ -40,7 +40,7 @@ AnimationClip:
         inWeight: 0
         outWeight: 0
       - serializedVersion: 3
-        time: 0.41666666
+        time: 0.5
         value: 0
         inSlope: Infinity
         outSlope: Infinity
@@ -166,9 +166,9 @@ AnimationClip:
     curve:
     - time: 0
       value: {fileID: 21300000, guid: a446808afc2e9454183e25555254bc24, type: 3}
-    - time: 0.33333334
-      value: {fileID: 21300000, guid: 794e152ca21af0b4a8525fdccb7f27e5, type: 3}
     - time: 0.41666666
+      value: {fileID: 21300000, guid: 794e152ca21af0b4a8525fdccb7f27e5, type: 3}
+    - time: 0.5
       value: {fileID: 21300000, guid: e0d5bfcccacd6094dae73c6f429c7216, type: 3}
     - time: 0.75
       value: {fileID: 21300000, guid: fd4c0bd2d42a7de4886d2260316cecb2, type: 3}
@@ -272,7 +272,7 @@ AnimationClip:
         inWeight: 0
         outWeight: 0
       - serializedVersion: 3
-        time: 0.33333334
+        time: 0.41666666
         value: 1
         inSlope: Infinity
         outSlope: Infinity
@@ -281,7 +281,7 @@ AnimationClip:
         inWeight: 0
         outWeight: 0
       - serializedVersion: 3
-        time: 0.41666666
+        time: 0.5
         value: 0
         inSlope: Infinity
         outSlope: Infinity
@@ -406,14 +406,14 @@ AnimationClip:
   m_HasGenericRootTransform: 0
   m_HasMotionFloatCurves: 0
   m_Events:
-  - time: 0.25
+  - time: 0.33333334
     functionName: PlaySoundEffect
     data: Attack4.1
     objectReferenceParameter: {fileID: 0}
     floatParameter: 0
     intParameter: 0
     messageOptions: 0
-  - time: 0.75
+  - time: 0.6666667
     functionName: PlaySoundEffect
     data: Attack4.2
     objectReferenceParameter: {fileID: 0}
