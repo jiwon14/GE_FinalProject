@@ -21,6 +21,12 @@ public class BossZoneTrigger : MonoBehaviour
 
     void OnTriggerEnter2D(Collider2D other)
     {
+        // [수정] 보스가 사라졌을 경우 (예: 1페이즈 사망), 새로운 보스를 다시 찾습니다.
+        if (bossController == null)
+        {
+            bossController = FindFirstObjectByType<T_BossController>();
+        }
+
         if (other.CompareTag("Player"))
         {
             if (bossController == null) return;
@@ -35,6 +41,12 @@ public class BossZoneTrigger : MonoBehaviour
 
     void OnTriggerExit2D(Collider2D other)
     {
+        // [수정] 보스가 사라졌을 경우, 새로운 보스를 다시 찾습니다.
+        if (bossController == null)
+        {
+            bossController = FindFirstObjectByType<T_BossController>();
+        }
+
         if (other.CompareTag("Player"))
         {
             if (bossController == null) return;

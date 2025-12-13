@@ -37,6 +37,16 @@ public class T_BossController : MonoBehaviour
     public Transform playerTransform;
     [Tooltip("보스 체력 UI 스크립트를 할당해야 합니다.")]
     public BossHealthUI bossHealthUI;
+    [Tooltip("2페이즈 전환 시 비활성화할 1페이즈 맵 오브젝트입니다.")]
+    public GameObject firstMap;
+    [Tooltip("화면 암전 효과에 사용할 검은색 UI Image입니다.")]
+    public UnityEngine.UI.Image screenFadeImage;
+    [Header("2페이즈 전환")]
+    [Tooltip("씬에 미리 배치된 2페이즈 보스 오브젝트입니다. 평소에는 비활성화 상태여야 합니다.")]
+    public GameObject phase2BossObject;
+    [Header("2페이즈 설정")]
+    [Tooltip("이 보스가 2페이즈 보스인지 여부입니다. 2페이즈 프리팹에서 이 항목을 체크해주세요.")]
+    public bool isPhase2 = false;
     [Header("Zone 콜라이더 참조")]
     [Tooltip("짧은 공격 Zone의 Collider 2D를 할당해야 합니다. 텔레포트 위치 계산에 사용됩니다.")]
     public Collider2D shortAttackZoneCollider;
@@ -64,6 +74,15 @@ public class T_BossController : MonoBehaviour
     [Tooltip("3번 공격(대쉬)의 지속 시간입니다.")]
     public float dashAttackDuration = 0.5f;
 
+    [Header("2페이즈 필살기")]
+    [Tooltip("씬에 미리 배치된 첫 번째 참격 이펙트 오브젝트입니다.")]
+    public GameObject ultimateSlashEffect1Object;
+    [Tooltip("씬에 미리 배치된 두 번째 참격 이펙트 오브젝트입니다.")]
+    public GameObject ultimateSlashEffect2Object;
+    [Tooltip("필살기 준비 사운드입니다. (샥샥 소리)")]
+    public AudioClip ultimateChargeSound;
+    [Tooltip("필살기 발동 사운드입니다. (참격 소리)")]
+    public AudioClip ultimateSlashSound;
     [Header("사운드")]
     public AudioClip attackSound;
     public AudioClip dieSound;
@@ -88,6 +107,12 @@ public class T_BossController : MonoBehaviour
     public float teleportBehindPlayerOffset = 3.0f;
     [Tooltip("텔레포트 시 플레이어와 유지할 최소 거리입니다.")]
     public float minTeleportPlayerDistance = 4.0f;
+
+    [Header("텔레포트 범위 제한")]
+    [Tooltip("텔레포트 가능한 가장 왼쪽 경계입니다.")]
+    public Transform leftWall;
+    [Tooltip("텔레포트 가능한 가장 오른쪽 경계입니다.")]
+    public Transform rightWall;
 
     // --- 내부 컴포넌트 및 상태 변수 ---
     private Rigidbody2D rb;
@@ -176,7 +201,18 @@ public class T_BossController : MonoBehaviour
     void Start()
     {
         // 참조 변수들이 제대로 할당되었는지 확인
-        if (playerTransform == null) Debug.LogError("<b>[T_BossController]</b> 플레이어 Transform이 할당되지 않았습니다! Inspector를 확인해주세요.", this);
+        if (playerTransform == null)
+        {
+            // 플레이어를 자동으로 찾아봅니다.
+            var player = FindFirstObjectByType<F_PlayerController>();
+            if (player != null) playerTransform = player.transform;
+            else Debug.LogError("<b>[T_BossController]</b> 플레이어 Transform을 찾을 수 없습니다! Inspector를 확인해주세요.", this);
+        }
+        if (firstMap == null) Debug.LogError("<b>[T_BossController]</b> 'firstMap' 오브젝트가 할당되지 않았습니다! Inspector를 확인해주세요.", this);
+        if (phase2BossObject == null && !isPhase2) Debug.LogError("<b>[T_BossController]</b> 'phase2BossObject'가 할당되지 않았습니다! 1페이즈 보스의 인스펙터를 확인해주세요.", this);
+        if ((ultimateSlashEffect1Object == null || ultimateSlashEffect2Object == null) && !isPhase2) 
+            Debug.LogWarning("<b>[T_BossController]</b> 필살기 이펙트 오브젝트 중 하나 이상이 할당되지 않아 필살기 연출이 제대로 표시되지 않을 수 있습니다.", this);
+        if (screenFadeImage == null) Debug.LogError("<b>[T_BossController]</b> 'screenFadeImage' UI 이미지가 할당되지 않았습니다! Inspector를 확인해주세요.", this);
         if (bossHealthUI == null) Debug.LogError("<b>[T_BossController]</b> BossHealthUI가 할당되지 않았습니다! Inspector를 확인해주세요.", this);
         if (shortAttackZoneCollider == null) Debug.LogError("<b>[T_BossController]</b> Short Attack Zone Collider가 할당되지 않았습니다! Inspector를 확인해주세요.", this);
         if (longAttackZoneCollider == null) Debug.LogError("<b>[T_BossController]</b> Long Attack Zone Collider가 할당되지 않았습니다! Inspector를 확인해주세요.", this);
@@ -425,6 +461,15 @@ public class T_BossController : MonoBehaviour
         bossHealth.TakeDamage(damage);
     }
 
+    /// <summary>
+    /// BossHealth에서 호출하여 2페이즈 전환을 시작합니다.
+    /// </summary>
+    public void StartPhase2Transition()
+    {
+        StopAllCoroutines(); // 진행 중인 모든 행동(공격, 텔레포트 등)을 즉시 중단합니다.
+        StartCoroutine(Phase2TransitionRoutine());
+    }
+
     public void Die()
     {
         StopAllCoroutines();
@@ -434,7 +479,8 @@ public class T_BossController : MonoBehaviour
         animator.SetTrigger(DieAnimID);
         if (audioSource != null) audioSource.Stop(); // 사망 시 BGM 정지
         PlaySound(dieSound);
-        Destroy(gameObject, 2.0f);
+        // 2초 후 오브젝트를 파괴하는 코루틴을 시작합니다.
+        StartCoroutine(DelayedDestroyRoutine(2.0f));
     }
 
     public void GetStunned()
@@ -491,6 +537,95 @@ public class T_BossController : MonoBehaviour
 
     // --- 코루틴 ---
 
+    private IEnumerator DelayedDestroyRoutine(float delay)
+    {
+        yield return new WaitForSeconds(delay);
+        #if UNITY_EDITOR
+        // 에디터에서 실행 중일 때, 파괴 직전에 선택을 해제하여 인스펙터 오류를 방지합니다.
+        UnityEditor.Selection.activeObject = null;
+        #endif
+        Destroy(gameObject);
+    }
+
+    private IEnumerator Phase2TransitionRoutine()
+    {
+        // 1. 모든 행동 중지
+        SetState(BossState.Dead); // 다른 행동을 못하도록 Dead 상태로 설정
+        rb.simulated = false; // 모든 물리 효과 정지
+        if (capsuleCollider != null) capsuleCollider.enabled = false;
+
+        // 추가: 보스 체력바가 확실히 보이도록 합니다.
+        if (bossHealthUI != null) bossHealthUI.Show();
+
+        // TODO: 1페이즈 사망 애니메이션이 있다면 여기서 재생
+        // yield return new WaitForSeconds(deathAnimationTime);
+
+        // 2. 화면 암전
+        yield return StartCoroutine(FadeScreen(1f, 0.1f)); // 거의 즉시 검게 변경
+
+        // 3. 1페이즈 보스 숨기기 및 맵 교체
+        spriteRenderer.enabled = false;
+        if (firstMap != null) firstMap.SetActive(false);
+
+        // 4. 10초 동안 필살기 연출
+        // 4. 필살기 연출 (총 10초)
+        if (enableDebugLogs) Debug.Log("2페이즈 전환 필살기 시퀀스 시작...");
+        
+        // 6초간 침묵
+        yield return new WaitForSeconds(6.0f);
+
+        // 6초 ~ 7초: 준비 사운드
+        PlaySound(ultimateChargeSound);
+        yield return new WaitForSeconds(1.0f);
+
+        // 7.0초 시점: 첫 번째 참격 (데미지)
+        if (enableDebugLogs) Debug.Log("필살기 1번 발동!");
+        PlaySound(ultimateSlashSound);
+        if (ultimateSlashEffect1Object != null) ultimateSlashEffect1Object.SetActive(true);
+        if (playerTransform != null)
+        {
+            playerTransform.GetComponent<F_PlayerController>()?.HandleAttack(999, gameObject, false); // 패링 불가능한 강력한 데미지
+        }
+
+        // 7.3초 시점: 두 번째 참격
+        yield return new WaitForSeconds(0.3f);
+        if (enableDebugLogs) Debug.Log("필살기 2번 발동!");
+        PlaySound(ultimateSlashSound);
+        if (ultimateSlashEffect2Object != null) ultimateSlashEffect2Object.SetActive(true);
+
+        // 8.0초 시점: 두 이펙트 모두 비활성화
+        yield return new WaitForSeconds(0.7f);
+        if (ultimateSlashEffect1Object != null) ultimateSlashEffect1Object.SetActive(false);
+        if (ultimateSlashEffect2Object != null) ultimateSlashEffect2Object.SetActive(false);
+
+        // 10.0초 시점: 화면 전환 시작 (8초에서 10초까지 2초 대기)
+        yield return new WaitForSeconds(2.0f);
+        // 5. 2페이즈 보스 활성화
+        if (phase2BossObject == null)
+        {
+            Debug.LogError("2페이즈 보스를 활성화할 수 없습니다! 'phase2BossObject'가 T_BossController 인스펙터에 할당되지 않았습니다.", gameObject);
+            // 1페이즈 보스 오브젝트를 그냥 파괴하고 씬을 깨끗하게 유지합니다.
+            #if UNITY_EDITOR
+            UnityEditor.Selection.activeObject = null;
+            #endif
+            Destroy(gameObject);
+            yield break; // 코루틴 중단
+        }
+
+        if (enableDebugLogs) Debug.Log("2페이즈 보스 활성화!");
+        phase2BossObject.SetActive(true);
+
+        // 6. 화면 밝아짐
+        yield return StartCoroutine(FadeScreen(0f, 1.5f));
+
+        // 7. 1페이즈 보스 오브젝트 최종 파괴
+        #if UNITY_EDITOR
+        // 에디터에서 실행 중일 때, 파괴 직전에 선택을 해제하여 인스펙터 오류를 방지합니다.
+        UnityEditor.Selection.activeObject = null;
+        #endif
+        Destroy(gameObject);
+    }
+
     private IEnumerator DashAttackRoutine()
     {
         // 1. 돌진 준비
@@ -539,20 +674,29 @@ public class T_BossController : MonoBehaviour
             float randomX = Random.Range(zoneBounds.min.x, zoneBounds.max.x);
             Vector2 potentialPosition = new Vector2(randomX, transform.position.y);
 
-            // 플레이어와의 최소 거리 체크
+            // [수정] 텔레포트 위치를 벽 경계 안으로 강제합니다.
+            if (leftWall != null && rightWall != null)
+            {
+                float minX = leftWall.position.x + 1f;
+                float maxX = rightWall.position.x - 1f;
+                potentialPosition.x = Mathf.Clamp(potentialPosition.x, minX, maxX);
+            }
+
+            // 조건: 플레이어와의 최소 거리 체크
             if (playerTransform != null && Vector2.Distance(potentialPosition, playerTransform.position) < minDistance)
             {
-                // 마지막 시도라면 그냥 이 위치를 사용
-                if (i == maxRetries - 1)
-                {
-                    if (enableDebugLogs) Debug.LogWarning($"텔레포트 위치 재시도({zoneName}) 실패, 마지막 위치 사용.");
-                    return potentialPosition;
-                }
+                if (enableDebugLogs) Debug.Log($"텔레포트 위치 후보({potentialPosition.x:F1})가 플레이어와 너무 가까워 재시도합니다. ({i + 1}/{maxRetries})");
                 continue; // 너무 가까우면 다시 시도
             }
-            return potentialPosition; // 적절한 위치를 찾았으면 반환
+
+            // 모든 조건을 통과했으면 유효한 위치입니다.
+            if (enableDebugLogs) Debug.Log($"유효한 텔레포트 위치를 찾았습니다: {potentialPosition}");
+            return potentialPosition;
         }
-        return null; // Should not be reached
+
+        // maxRetries 만큼 시도했지만 유효한 위치를 찾지 못한 경우
+        Debug.LogWarning($"텔레포트 위치를 {maxRetries}번 시도했지만 유효한 위치를 찾지 못했습니다. 텔레포트를 취소합니다.");
+        return null;
     }
 
     private IEnumerator TeleportRoutine(TeleportDestination destination)
@@ -573,7 +717,16 @@ public class T_BossController : MonoBehaviour
             {
                 SpriteRenderer playerSprite = playerTransform.GetComponent<SpriteRenderer>();
                 float behindDirection = playerSprite.flipX ? 1f : -1f;
-                targetPosition = new Vector2(playerTransform.position.x + (behindDirection * teleportBehindPlayerOffset), transform.position.y);
+                Vector2 potentialPosition = new Vector2(playerTransform.position.x + (behindDirection * teleportBehindPlayerOffset), transform.position.y);
+
+                // [수정] 텔레포트 위치를 벽 경계 안으로 강제합니다.
+                if (leftWall != null && rightWall != null)
+                {
+                    float minX = leftWall.position.x + 1f;
+                    float maxX = rightWall.position.x - 1f;
+                    potentialPosition.x = Mathf.Clamp(potentialPosition.x, minX, maxX);
+                }
+                targetPosition = potentialPosition;
             }
             else
             {
@@ -638,6 +791,23 @@ public class T_BossController : MonoBehaviour
                 SetState(BossState.Deciding);
             }
         }
+    }
+
+    private IEnumerator FadeScreen(float targetAlpha, float duration)
+    {
+        if (screenFadeImage == null) yield break;
+
+        float timer = 0f;
+        Color startColor = screenFadeImage.color;
+        Color targetColor = new Color(startColor.r, startColor.g, startColor.b, targetAlpha);
+
+        while (timer < duration)
+        {
+            screenFadeImage.color = Color.Lerp(startColor, targetColor, timer / duration);
+            timer += Time.deltaTime;
+            yield return null;
+        }
+        screenFadeImage.color = targetColor;
     }
 
     private IEnumerator ForceFinishAttackRoutine(float limitTime)
@@ -729,6 +899,8 @@ public class T_BossController : MonoBehaviour
     {
         // 인스펙터에서 참조가 할당될 때마다 호출되어, 잘못된 참조를 검사합니다.
         CheckReference(playerTransform, "Player Transform");
+        CheckReference(leftWall, "Left Wall");
+        CheckReference(rightWall, "Right Wall");
         CheckReference(bossHealthUI, "Boss Health UI");
         CheckReference(shortAttackZoneCollider, "Short Attack Zone Collider");
         CheckReference(longAttackZoneCollider, "Long Attack Zone Collider");

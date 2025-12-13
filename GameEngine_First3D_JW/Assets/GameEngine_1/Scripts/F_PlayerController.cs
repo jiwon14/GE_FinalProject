@@ -43,10 +43,14 @@ public class F_PlayerController : MonoBehaviour
     private Rigidbody2D rb;
     private AudioSource audioSource;
     private Animator anim; 
+    private bool isDead = false; // 플레이어 사망 상태
     private bool isGrounded = false;
 
     private Coroutine flashRoutine; 
     private Color defaultColor;     
+
+    // --- 애니메이터 파라미터 ID ---
+    private readonly int DoDieTriggerID = Animator.StringToHash("doDie");
 
     void Start()
     {
@@ -60,6 +64,9 @@ public class F_PlayerController : MonoBehaviour
 
     void Update()
     {
+        // 사망 시 모든 입력을 무시합니다.
+        if (isDead) return;
+
         anim.SetBool("isGrounded", isGrounded);
 
         if (isParrying || isRolling)
@@ -220,6 +227,44 @@ public class F_PlayerController : MonoBehaviour
         HandleAttack(damage, attacker, true);
     }
 
+    /// <summary>
+    /// 플레이어의 사망 처리를 담당합니다.
+    /// </summary>
+    public void Die()
+    {
+        if (isDead) return; // 중복 실행 방지
+
+        isDead = true;
+        Debug.Log("플레이어 사망!");
+
+        // 물리 효과 및 충돌 비활성화
+        rb.linearVelocity = Vector2.zero;
+        rb.bodyType = RigidbodyType2D.Kinematic;
+        GetComponent<Collider2D>().enabled = false;
+
+        // 사망 애니메이션 재생
+        anim.SetTrigger(DoDieTriggerID);
+
+        // 게임 종료 코루틴 시작
+        StartCoroutine(EndGameRoutine());
+    }
+
+    private IEnumerator EndGameRoutine()
+    {
+        // 죽는 애니메이션이 끝날 때까지 대기 (예: 2초)
+        yield return new WaitForSeconds(2.0f);
+
+        Debug.Log("게임 종료.");
+        // 에디터에서는 플레이 모드를 중지하고, 빌드된 게임에서는 애플리케이션을 종료합니다.
+        #if UNITY_EDITOR
+        // 에디터에서 실행 중일 때, 플레이 모드 중지 전에 선택을 해제하여 인스펙터 오류를 방지합니다.
+        UnityEditor.Selection.activeObject = null;
+        UnityEditor.EditorApplication.isPlaying = false;
+        #else
+        Application.Quit();
+        #endif
+    }
+
     public void HandleAttack(int damage, GameObject attacker, bool isParryDamageable)
     {
         // [1] 무적 (회피 성공)
@@ -270,11 +315,12 @@ public class F_PlayerController : MonoBehaviour
             if (gameManager != null)
             {
                 gameManager.TakeDamage(damage);
-                
-                if (flashRoutine != null) StopCoroutine(flashRoutine);
-                sp.color = defaultColor;
-                flashRoutine = StartCoroutine(DamageFlashRoutine());
             }
+
+            // 데미지 시각 효과를 게임 매니저 존재 여부와 상관없이 실행합니다.
+            if (flashRoutine != null) StopCoroutine(flashRoutine);
+            sp.color = defaultColor; // 깜빡임이 중첩될 경우를 대비해 기본 색상으로 초기화
+            flashRoutine = StartCoroutine(DamageFlashRoutine());
         }
     }
 

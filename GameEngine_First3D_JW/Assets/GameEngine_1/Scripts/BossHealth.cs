@@ -6,6 +6,7 @@ public class BossHealth : MonoBehaviour
 {
     [SerializeField] private float maxHealth = 1000f;
     private float currentHealth;
+    private bool hasDiedOnce = false; // 2페이즈 전환을 위해, 한 번 죽었는지 확인
     private bool isDead = false; // 보스가 죽었는지 확인하는 플래그
 
     private F_BossController f_bossController;
@@ -40,7 +41,7 @@ public class BossHealth : MonoBehaviour
 
         if (currentHealth <= 0 && !isDead) // 죽지 않았을 때만 Die()를 한 번만 호출
         {
-            Die();
+            HandleDeath();
         }
     }
 
@@ -51,18 +52,27 @@ public class BossHealth : MonoBehaviour
         OnHealthChanged?.Invoke(currentHealth, maxHealth); // 이벤트 호출
     }
 
-    private void Die()
+    private void HandleDeath()
     {
         isDead = true; // 사망 상태로 변경
 
         // 연결된 보스 컨트롤러의 Die 함수를 호출
-        if (f_bossController != null)
+        if (t_bossController != null)
+        {
+            // 2페이즈 보스이거나, 이미 한 번 죽었다면 최종 죽음 처리
+            if (t_bossController.isPhase2 || hasDiedOnce)
+            {
+                t_bossController.Die(); // 최종 죽음
+            }
+            else // 1페이즈 보스의 첫 죽음이라면 2페이즈 전환 시작
+            {
+                hasDiedOnce = true;
+                t_bossController.StartPhase2Transition(); // 2페이즈 전환 시작
+            }
+        }
+        else if (f_bossController != null) // T_Boss가 아닐 경우 기존 로직
         {
             f_bossController.Die();
-        }
-        else if (t_bossController != null)
-        {
-            t_bossController.Die();
         }
     }
 
