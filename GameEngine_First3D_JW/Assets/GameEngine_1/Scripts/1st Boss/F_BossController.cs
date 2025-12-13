@@ -36,6 +36,7 @@ public class F_BossController : MonoBehaviour
     public AudioClip normalAttackSound; 
     public AudioClip strongAttackSound;
     public AudioClip pierceAttackSound; 
+    public AudioClip dashSound; 
 
     [Header("찌르기 공격 (Attack 2) 설정")]
     public float pierceBackwardDistance = 1.0f; 
@@ -429,6 +430,7 @@ public class F_BossController : MonoBehaviour
     {
         if (currentState == BossState.Dashing)
         {
+            PlaySound(dashSound);
             isDashMoving = true;
         }
     }

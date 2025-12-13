@@ -2698,6 +2698,7 @@ MonoBehaviour:
   normalAttackSound: {fileID: 8300000, guid: f656109deb806d2498acf46c8e2b0495, type: 3}
   strongAttackSound: {fileID: 8300000, guid: f656109deb806d2498acf46c8e2b0495, type: 3}
   pierceAttackSound: {fileID: 8300000, guid: f656109deb806d2498acf46c8e2b0495, type: 3}
+  dashSound: {fileID: 8300000, guid: 6299c6c0bb0114f4ab2bc1c46aee52b4, type: 3}
   pierceBackwardDistance: 1
   pierceBackwardSpeed: 3
   pierceForwardDistance: 3

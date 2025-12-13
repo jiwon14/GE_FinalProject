@@ -20,6 +20,13 @@ public class T_BossController : MonoBehaviour
     // 텔레포트 목적지 정의
     private enum TeleportDestination { ShortZone, LongZone }
 
+    [System.Serializable]
+    public struct SoundEffect
+    {
+        public string name;
+        public AudioClip clip;
+    }
+
     [Header("디버그")]
     [Tooltip("활성화하면 보스의 현재 상태와 결정 등 상세 로그를 콘솔에 출력합니다.")]
     public bool enableDebugLogs = true;
@@ -60,6 +67,9 @@ public class T_BossController : MonoBehaviour
     [Header("사운드")]
     public AudioClip attackSound;
     public AudioClip dieSound;
+    public AudioClip bossBgm; // BGM 추가
+    [Tooltip("인스펙터에서 사운드 이름과 클립을 등록하세요.")]
+    public List<SoundEffect> soundEffects;
 
     // --- 내부 컴포넌트 및 상태 변수 ---
     private Rigidbody2D rb;
@@ -68,6 +78,7 @@ public class T_BossController : MonoBehaviour
     private Animator animator;
     private BossHealth bossHealth;
     private CapsuleCollider2D capsuleCollider;
+    private Dictionary<string, AudioClip> soundDictionary;
 
     private BossState currentState = BossState.Idle;
     private float lastActionTime = 0f;
@@ -113,6 +124,19 @@ public class T_BossController : MonoBehaviour
             Animator.StringToHash("Attack4"),
             Animator.StringToHash("Attack5"),
         };
+
+        // 사운드 딕셔너리 초기화
+        soundDictionary = new Dictionary<string, AudioClip>();
+        if (soundEffects != null)
+        {
+            foreach (var effect in soundEffects)
+            {
+                if (!string.IsNullOrEmpty(effect.name) && effect.clip != null && !soundDictionary.ContainsKey(effect.name))
+                {
+                    soundDictionary.Add(effect.name, effect.clip);
+                }
+            }
+        }
     }
 
     void Start()
@@ -321,6 +345,7 @@ public class T_BossController : MonoBehaviour
         rb.bodyType = RigidbodyType2D.Kinematic;
         if (capsuleCollider != null) capsuleCollider.enabled = false;
         animator.SetTrigger(DieAnimID);
+        if (audioSource != null) audioSource.Stop(); // 사망 시 BGM 정지
         PlaySound(dieSound);
         Destroy(gameObject, 2.0f);
     }
@@ -344,6 +369,31 @@ public class T_BossController : MonoBehaviour
     public void AnimationEvent_PlayAttackSound()
     {
         PlaySound(attackSound);
+    }
+
+    public void PlaySoundEffect(string soundName)
+    {
+        // 1. 호출 확인 로그
+        Debug.Log($"[T_BossController] PlaySoundEffect 호출됨: {soundName}");
+
+        // 3. 예외 처리: AudioSource 확인
+        if (audioSource == null)
+        {
+            Debug.LogError("[T_BossController] AudioSource 컴포넌트가 없습니다!");
+            return;
+        }
+
+        // 2. 사운드 찾기 및 재생
+        if (soundDictionary != null && soundDictionary.TryGetValue(soundName, out AudioClip clip))
+        {
+            if (clip != null) audioSource.PlayOneShot(clip);
+            else Debug.LogError($"[T_BossController] '{soundName}'에 해당하는 AudioClip이 비어있습니다.");
+        }
+        else
+        {
+            // 3. 예외 처리: 이름 없음
+            Debug.LogError($"[T_BossController] 사운드 '{soundName}'를 찾을 수 없습니다. Inspector의 Sound Effects 리스트를 확인하세요.");
+        }
     }
 
     // --- 코루틴 ---
@@ -407,8 +457,27 @@ public class T_BossController : MonoBehaviour
     }
 
     // --- Zone 트리거 감지 함수 ---
-    public void OnPlayerEnterTrackingZone() { isPlayerInTrackingZone = true; if (enableDebugLogs) Debug.Log("플레이어 진입: TrackingZone"); if (bossHealthUI != null) bossHealthUI.Show(); }
-    public void OnPlayerExitTrackingZone() { isPlayerInTrackingZone = false; isPlayerInLongAttackZone = false; isPlayerInShortAttackZone = false; isPlayerInCloseZone = false; SetState(BossState.Idle); if (enableDebugLogs) Debug.Log("플레이어 이탈: TrackingZone"); }
+    public void OnPlayerEnterTrackingZone() 
+    { 
+        isPlayerInTrackingZone = true; 
+        if (enableDebugLogs) Debug.Log("플레이어 진입: TrackingZone"); 
+        if (bossHealthUI != null) bossHealthUI.Show();
+
+        // BGM 재생 로직
+        if (audioSource != null && bossBgm != null && (audioSource.clip != bossBgm || !audioSource.isPlaying))
+        {
+            audioSource.clip = bossBgm;
+            audioSource.loop = true;
+            audioSource.Play();
+        }
+    }
+    public void OnPlayerExitTrackingZone() 
+    { 
+        isPlayerInTrackingZone = false; isPlayerInLongAttackZone = false; isPlayerInShortAttackZone = false; isPlayerInCloseZone = false; 
+        SetState(BossState.Idle); 
+        if (enableDebugLogs) Debug.Log("플레이어 이탈: TrackingZone");
+        if (audioSource != null && audioSource.clip == bossBgm) audioSource.Stop(); // 범위 이탈 시 BGM 정지
+    }
     public void OnPlayerEnterLongAttackZone() { isPlayerInLongAttackZone = true; if (enableDebugLogs) Debug.Log("플레이어 진입: LongAttackZone"); }
     public void OnPlayerExitLongAttackZone() { isPlayerInLongAttackZone = false; if (enableDebugLogs) Debug.Log("플레이어 이탈: LongAttackZone"); }
     public void OnPlayerEnterShortAttackZone() { isPlayerInShortAttackZone = true; if (enableDebugLogs) Debug.Log("플레이어 진입: ShortAttackZone"); }
