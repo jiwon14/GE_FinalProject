@@ -417,6 +417,15 @@ public class T_BossController : MonoBehaviour
     void FacePlayer()
     {
         if (playerTransform == null || isDirectionLocked) return; // 방향이 고정되어 있으면 실행하지 않음
+
+        // [수정] 공격 애니메이션 재생 중에는 방향을 바꾸지 않도록 방지합니다.
+        // 이 기능이 올바르게 작동하려면, 유니티 Animator에서 모든 공격 상태(Attack1, Attack2 등)를 선택하고
+        // 인스펙터의 'Tag' 필드에 "Attack"이라고 입력해야 합니다.
+        if (animator != null && animator.GetCurrentAnimatorStateInfo(0).IsTag("Attack"))
+        {
+            return;
+        }
+
         bool isPlayerRight = (playerTransform.position.x - transform.position.x) > 0;
         ApplyScale(isPlayerRight);
     }
@@ -465,6 +474,13 @@ public class T_BossController : MonoBehaviour
     public void StartPhase2Transition()
     {
         StopAllCoroutines(); // 진행 중인 모든 행동(공격, 텔레포트 등)을 즉시 중단합니다.
+
+        // [수정] 2페이즈 전환 시, 현재 진행 중인 모든 애니메이션을 즉시 정지시켜 패턴이 계속되는 현상을 막습니다.
+        if (animator != null)
+        {
+            animator.speed = 0; // 애니메이터의 재생을 멈춥니다.
+        }
+
         StartCoroutine(Phase2TransitionRoutine());
     }
 

@@ -273,7 +273,7 @@ public class F_PlayerController : MonoBehaviour
     private IEnumerator EndGameRoutine()
     {
         // 죽는 애니메이션이 끝날 때까지 대기 (예: 2초)
-        yield return new WaitForSeconds(2.0f);
+        yield return new WaitForSeconds(1.6f);
 
         if (!string.IsNullOrEmpty(deathSceneName))
         {
