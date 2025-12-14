@@ -26,6 +26,9 @@ EditorBuildSettings:
   - enabled: 1
     path: Assets/GameEngine_1/Scenes/Scene6_TBoss.unity
     guid: 9d494fbea8050b14eb66c783f611c2eb
+  - enabled: 1
+    path: Assets/GameEngine_1/Scenes/PlayerDied.unity
+    guid: a0aa6d4a90cc50c41ad4768da5d0ef38
   m_configObjects:
     com.unity.input.settings.actions: {fileID: -944628639613478452, guid: 052faaac586de48259a63d0c4782560b, type: 3}
   m_UseUCBPForAssetBundles: 0

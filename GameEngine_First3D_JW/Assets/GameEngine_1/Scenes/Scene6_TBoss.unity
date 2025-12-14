@@ -4185,7 +4185,7 @@ Transform:
   m_GameObject: {fileID: 1403088242}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -57.810005, y: 29.766644, z: -10}
+  m_LocalPosition: {x: -49.74923, y: 29.766647, z: -10}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -4574,7 +4574,7 @@ MonoBehaviour:
   parryWindow: 0.25
   parryCooldown: 1
   parrySuccessSound: {fileID: 8300000, guid: 2cdda754db412c44eadb2d9174771ef4, type: 3}
-  deathSceneName: 
+  deathSceneName: PlayerDied
 --- !u!50 &1434073476
 Rigidbody2D:
   serializedVersion: 5

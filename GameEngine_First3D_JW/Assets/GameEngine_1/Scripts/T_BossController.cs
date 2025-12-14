@@ -472,10 +472,11 @@ public class T_BossController : MonoBehaviour
     {
         StopAllCoroutines();
         SetState(BossState.Dead);
+        DisableAllAttackHitboxes(); // 사망 시 공격 판정 즉시 비활성화
+        if (audioSource != null) audioSource.Stop(); // 공격 사운드 및 BGM 즉시 정지
         rb.bodyType = RigidbodyType2D.Kinematic;
         if (capsuleCollider != null) capsuleCollider.enabled = false;
         animator.SetTrigger(DieAnimID);
-        if (audioSource != null) audioSource.Stop(); // 사망 시 BGM 정지
         PlaySound(dieSound);
         // 2초 후 오브젝트를 파괴하는 코루틴을 시작합니다.
         StartCoroutine(DelayedDestroyRoutine(2.0f));
@@ -549,6 +550,8 @@ public class T_BossController : MonoBehaviour
     {
         // 1. 모든 행동 중지
         SetState(BossState.Dead); // 다른 행동을 못하도록 Dead 상태로 설정
+        DisableAllAttackHitboxes(); // 2페이즈 전환 시 공격 판정 즉시 비활성화
+        if (audioSource != null) audioSource.Stop(); // 공격 사운드 및 BGM 즉시 정지
         rb.simulated = false; // 모든 물리 효과 정지
         if (capsuleCollider != null) capsuleCollider.enabled = false;
 
@@ -898,6 +901,27 @@ public class T_BossController : MonoBehaviour
         if (audioSource != null && clip != null)
         {
             audioSource.PlayOneShot(clip);
+        }
+    }
+
+    // 모든 공격 히트박스(자식 오브젝트)를 비활성화하는 함수
+    private void DisableAllAttackHitboxes()
+    {
+        T_BossHitbox[] hitboxes = GetComponentsInChildren<T_BossHitbox>();
+        foreach (var hitbox in hitboxes)
+        {
+            // 보스 본체가 아닌 경우(자식 히트박스) 오브젝트 자체를 비활성화하여 확실하게 끕니다.
+            if (hitbox.gameObject != gameObject)
+            {
+                hitbox.gameObject.SetActive(false);
+            }
+            else
+            {
+                // 만약 본체에 스크립트가 있다면 컴포넌트와 콜라이더만 끕니다.
+                hitbox.enabled = false;
+                Collider2D col = hitbox.GetComponent<Collider2D>();
+                if (col != null) col.enabled = false;
+            }
         }
     }
 
