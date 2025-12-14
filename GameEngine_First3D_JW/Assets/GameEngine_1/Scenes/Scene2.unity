@@ -453,7 +453,7 @@ SpriteRenderer:
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 0
-  m_Sprite: {fileID: 21300000, guid: 8b203b31c7dc60246a63311eac6f79f2, type: 3}
+  m_Sprite: {fileID: 21300000, guid: 4417caeecce61db4bbf9e910be6da472, type: 3}
   m_Color: {r: 0.8867924, g: 0.8867924, b: 0.8867924, a: 1}
   m_FlipX: 0
   m_FlipY: 0
@@ -473,8 +473,8 @@ Transform:
   m_GameObject: {fileID: 521046970}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -339.0709, y: 259.89, z: 0}
-  m_LocalScale: {x: 0.47095925, y: 0.43046123, z: 1}
+  m_LocalPosition: {x: -338.9626, y: 259.57, z: 0}
+  m_LocalScale: {x: 0.1552057, y: 0.10493332, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 0}
@@ -715,7 +715,7 @@ GameObject:
   - component: {fileID: 1381195457}
   - component: {fileID: 1381195456}
   m_Layer: 0
-  m_Name: DialogueManager
+  m_Name: DialogueSceneManager
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -735,28 +735,36 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   textDisplay: {fileID: 1474330977}
   nextIcon: {fileID: 413495983}
+  nextSceneName: Scene3_Control
   sentences:
-  - "\"\uC544\u2026.\" \u25BC"
+  - GAME START
+  - "\"\uC73C\uC544\uC544\uC544\uC545!\"  \u25BC"
   - "\uD551, \uD558\uACE0 \uBA38\uB9AC\uC5D0 \uD53C\uAC00 \uC3E0\uB9B0\uB2E4.\n \n\uC2DC\uC57C\uAC00
     \uC810\uBA78\uD558\uB4EF \uAE4C\uB9E3\uAC8C \uBCC0\uD588\uB2E4\uAC00 \uB3CC\uC544\uC654\uB2E4.\n\n\uD53C\uBD80\uC5D0
     \uB2FF\uB294 \uB054\uCC0D\uD55C \uC5F4\uAE30\uAC00 \uC774 \uC0C1\uD669\uC774
-    \uD604\uC2E4\uC784\uC744 \uBF08\uC800\uB9AC\uAC8C \uACBD\uACE0\uD558\uACE0\uC788\uB2E4.
+    \uD604\uC2E4\uC784\uC744 \uBF08\uC800\uB9AC\uAC8C \uACBD\uACE0\uD558\uACE0\uC788\uB2E4.  
     \u25BC"
   - "\uC5B4\uC81C\uB9CC \uD574\uB3C4 \uC0AC\uB78C\uB4E4\uC774 \uAC70\uB2D0\uB358
     \uAC70\uB9AC\uAC00 \uBD88\uD0C0\uACE0, \uB9D1\uC558\uB358 \uD558\uB298\uACFC
     \uC6B0\uB9AC\uAC00 \uC9C0\uD0A4\uB824 \uD588\uB358 \uB9C8\uC744\u2026\n\n\uBAA8\uB4E0
-    \uAC83\uC774 \uAC80\uBD89\uAC8C \uD0C0\uB4E4\uC5B4\uAC00\uACE0 \uC788\uB2E4.
+    \uAC83\uC774 \uAC80\uBD89\uAC8C \uD0C0\uB4E4\uC5B4\uAC00\uACE0 \uC788\uB2E4. 
     \u25BC"
+  - "'...\uB300\uC7A5'  \u25BC"
   - "\uBAA9\uC774 \uC5C6\uB2E4.\n\n\uB0A8\uC740 \uAC83\uC740 \uB369\uADF8\uB7EC\uB2C8
     \uB193\uC778 \uBAB8\uB6B1\uC774\uBFD0.\n\n\uBC18\uC9C0\uAC00 \uADC0\uCC2E\uB2E4\uBA70
     \uC57D\uC9C0\uC5D0 \uC0C8\uACBC\uB358 \uBB38\uC2E0\uB9CC\uC774 \uADF8\uAC00 \uB300\uC7A5\uC784\uC744
     \uC54C\uB824\uC8FC\uACE0 \uC788\uB2E4.\n\n\uADF8\uC758 \uC8FC\uBCC0\uC5D0\uB294
     \uADF8\uAC00, \uC544\uB2C8 \uB0B4\uAC00 \uC9C0\uD0A4\uC9C0 \uBABB\uD55C \uB3D9\uB8CC\uB4E4\uC758
-    \uC0AC\uCCB4\uAC00 \uB099\uC5FD\uCC98\uB7FC \uB110\uBE0C\uB7EC\uC838 \uC788\uC5C8\uB2E4.
+    \uC0AC\uCCB4\uAC00 \uB099\uC5FD\uCC98\uB7FC \uB110\uBE0C\uB7EC\uC838 \uC788\uC5C8\uB2E4. 
     \u25BC"
   - "\uBD84\uB178\uC640 \uB450\uB824\uC6C0. \uC815\uCCB4 \uBAA8\uB97C \uAC10\uC815\uC774
     \uAC08\uBE44\uBF08\uB97C \uBD80\uB7EC\uB728\uB9B4 \uAE30\uC138\uB85C \uAC00\uC2B4
-    \uC548\uCABD\uC744 \uBBF8\uCE5C \uB4EF\uC774 \uB450\uB4E4\uACBC\uB2E4. \u25BC"
+    \uC548\uCABD\uC744 \uBBF8\uCE5C \uB4EF\uC774 \uB450\uB4E4\uACBC\uB2E4.  \n\n\uC628\uBAB8\uC758
+    \uC138\uD3EC\uAC00 \uB2F9\uC7A5 \uC774\uACF3\uC744 \uBC97\uC5B4\uB098\uC57C \uD55C\uB2E4\uACE0
+    \uC2DC\uB044\uB7FD\uAC8C \uC544\uC6B0\uC131\uCCE4\uB2E4.  \u25BC"
+  - "\uB3C4\uB9DD\uCE58\uACE0\uC2F6\uB2E4.\n\n\uD558\uC9C0\uB9CC....\n\n\uB0B4 \uC55E\uC5D0
+    \uC11C\uC788\uB294  \uAD34\uBB3C\uC740 \uB0B4\uAC00 \uC8FD\uC744 \uB54C \uAE4C\uC9C0
+    \uB098\uB97C \uCAD3\uC544\uC62C \uC0DD\uAC01\uC778 \uAC83 \uAC19\uB2E4. \u25BC"
   typingSpeed: 0.05
   audioSource: {fileID: 0}
   bgmClip: {fileID: 8300000, guid: 2c6150b59d9932842906d7af633ca9f6, type: 3}

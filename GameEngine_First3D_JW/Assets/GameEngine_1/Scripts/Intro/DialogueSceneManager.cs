@@ -1,12 +1,16 @@
 using UnityEngine;
 using System.Collections; // 코루틴 사용을 위해 추가
 using TMPro; // TextMeshPro를 사용하기 위해 꼭 필요합니다.
+using UnityEngine.SceneManagement; // 씬 이동을 위해 필수
 
-public class DialogueManager : MonoBehaviour
+public class DialogueSceneManager : MonoBehaviour
 {
     [Header("UI 컴포넌트")]
     public TextMeshProUGUI textDisplay; // 화면에 보여줄 텍스트 오브젝트
     public GameObject nextIcon; // 다음 대화가 있음을 알리는 아이콘 (화살표 등)
+
+    [Header("씬 이동 설정")]
+    public string nextSceneName; // 대화가 끝나면 이동할 씬의 이름
 
     [Header("대화 내용")]
     [TextArea(3, 10)] // 인스펙터에서 입력창을 넓게 보여줍니다.
@@ -45,10 +49,6 @@ public class DialogueManager : MonoBehaviour
             audioSource.loop = true; // 반복 재생
             audioSource.spatialBlend = 0f; // 2D 사운드로 강제 설정 (거리에 따라 소리가 작아지는 문제 방지)
             audioSource.Play();
-        }
-        else
-        {
-            Debug.LogWarning("배경음악 파일(Bgm Clip)이 연결되지 않았습니다! 인스펙터를 확인해주세요.");
         }
         
         // 대화 내용이 있다면 첫 문장을 타자기 효과로 보여줌
@@ -136,8 +136,15 @@ public class DialogueManager : MonoBehaviour
         if (blinkCoroutine != null) StopCoroutine(blinkCoroutine); // 깜빡임 중지
         if (nextIcon != null) nextIcon.SetActive(false); // 대화 종료 시 아이콘 숨김
         
-        // 여기에 대화창을 끄는 코드를 넣어도 됩니다.
-        // gameObject.SetActive(false); 
+        // [추가된 기능] 씬 이동 로직
+        if (!string.IsNullOrEmpty(nextSceneName))
+        {
+            SceneManager.LoadScene(nextSceneName);
+        }
+        else
+        {
+            Debug.LogWarning("이동할 씬 이름(Next Scene Name)이 설정되지 않았습니다!");
+        }
     }
 
     // 커서(화살표)를 깜빡이게 하는 코루틴

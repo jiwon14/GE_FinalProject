@@ -1,5 +1,6 @@
 using System.Collections;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 [RequireComponent(typeof(AudioSource))] 
 public class F_BossController : MonoBehaviour 
@@ -15,6 +16,8 @@ public class F_BossController : MonoBehaviour
 
     [Header("설정")]
     public bool spriteFacesLeft = true; 
+    [Tooltip("보스 사망 시 이동할 씬의 이름")]
+    public string nextSceneName;
 
     [Header("능력치")]
     private BossHealth bossHealth; // BossHealth 참조로 변경
@@ -377,11 +380,18 @@ public class F_BossController : MonoBehaviour
     {
         // 2초 동안 시체 보여주기
         yield return new WaitForSeconds(2.0f); 
-        #if UNITY_EDITOR
-        // 에디터에서 실행 중일 때, 파괴 직전에 선택을 해제하여 인스펙터 오류를 방지합니다.
-        UnityEditor.Selection.activeObject = null;
-        #endif
-        Destroy(gameObject); 
+
+        if (!string.IsNullOrEmpty(nextSceneName))
+        {
+            SceneManager.LoadScene(nextSceneName);
+        }
+        else
+        {
+            #if UNITY_EDITOR
+            UnityEditor.Selection.activeObject = null;
+            #endif
+            Destroy(gameObject); 
+        }
     }
 
     // --- 이벤트 함수들 (철벽 방어 적용) ---

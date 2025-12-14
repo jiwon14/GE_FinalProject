@@ -1,5 +1,6 @@
 using UnityEngine;
 using System.Collections; 
+using UnityEngine.SceneManagement;
 
 [RequireComponent(typeof(AudioSource))]
 [RequireComponent(typeof(Animator))] 
@@ -38,6 +39,9 @@ public class F_PlayerController : MonoBehaviour
     [Header("사운드 설정")]
     public AudioClip parrySuccessSound; 
     // public AudioClip rollSound; 
+
+    [Header("사망 설정")]
+    public string deathSceneName; // 사망 시 이동할 씬 이름
 
     private SpriteRenderer sp;
     private Rigidbody2D rb;
@@ -254,15 +258,20 @@ public class F_PlayerController : MonoBehaviour
         // 죽는 애니메이션이 끝날 때까지 대기 (예: 2초)
         yield return new WaitForSeconds(2.0f);
 
-        Debug.Log("게임 종료.");
-        // 에디터에서는 플레이 모드를 중지하고, 빌드된 게임에서는 애플리케이션을 종료합니다.
-        #if UNITY_EDITOR
-        // 에디터에서 실행 중일 때, 플레이 모드 중지 전에 선택을 해제하여 인스펙터 오류를 방지합니다.
-        UnityEditor.Selection.activeObject = null;
-        UnityEditor.EditorApplication.isPlaying = false;
-        #else
-        Application.Quit();
-        #endif
+        if (!string.IsNullOrEmpty(deathSceneName))
+        {
+            SceneManager.LoadScene(deathSceneName);
+        }
+        else
+        {
+            Debug.LogWarning("이동할 씬 이름(Death Scene Name)이 설정되지 않았습니다! 게임을 종료합니다.");
+            #if UNITY_EDITOR
+            UnityEditor.Selection.activeObject = null;
+            UnityEditor.EditorApplication.isPlaying = false;
+            #else
+            Application.Quit();
+            #endif
+        }
     }
 
     public void HandleAttack(int damage, GameObject attacker, bool isParryDamageable)

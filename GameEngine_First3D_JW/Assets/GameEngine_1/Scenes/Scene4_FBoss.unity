@@ -1795,7 +1795,7 @@ Transform:
   m_GameObject: {fileID: 1071293395}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -47.053658, y: 21.41, z: -10}
+  m_LocalPosition: {x: -42.193592, y: 21.41, z: -10}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -2121,7 +2121,7 @@ Transform:
   m_GameObject: {fileID: 1403088242}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -39.500603, y: 21.409996, z: -10}
+  m_LocalPosition: {x: -35.488594, y: 23.620506, z: -10}
   m_LocalScale: {x: 1.5110753, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -2779,6 +2779,7 @@ MonoBehaviour:
   playerTransform: {fileID: 1758725815}
   bossHealthUI: {fileID: 2040549905}
   spriteFacesLeft: 0
+  nextSceneName: Scene5
   moveSpeed: 5
   chargeSpeed: 15
   actionCooldown: 0.8
@@ -2911,7 +2912,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 3c8e01f69ffa50247822c1c32c941751, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  maxHealth: 50
+  maxHealth: 5
 --- !u!1 &1680267243
 GameObject:
   m_ObjectHideFlags: 0
@@ -3182,6 +3183,7 @@ MonoBehaviour:
   parryWindow: 0.25
   parryCooldown: 1
   parrySuccessSound: {fileID: 8300000, guid: 2cdda754db412c44eadb2d9174771ef4, type: 3}
+  deathSceneName: Scene3_Control
 --- !u!50 &1758725812
 Rigidbody2D:
   serializedVersion: 5
