@@ -75,10 +75,8 @@ public class T_BossController : MonoBehaviour
     public float dashAttackDuration = 0.5f;
 
     [Header("2페이즈 필살기")]
-    [Tooltip("씬에 미리 배치된 첫 번째 참격 이펙트 오브젝트입니다.")]
-    public GameObject ultimateSlashEffect1Object;
-    [Tooltip("씬에 미리 배치된 두 번째 참격 이펙트 오브젝트입니다.")]
-    public GameObject ultimateSlashEffect2Object;
+    [Tooltip("씬에 미리 배치된 참격 이펙트 오브젝트 배열입니다. (순서대로 재생됨)")]
+    public GameObject[] ultimateSlashEffects;
     [Tooltip("필살기 준비 사운드입니다. (샥샥 소리)")]
     public AudioClip ultimateChargeSound;
     [Tooltip("필살기 발동 사운드입니다. (참격 소리)")]
@@ -210,8 +208,8 @@ public class T_BossController : MonoBehaviour
         }
         if (firstMap == null) Debug.LogError("<b>[T_BossController]</b> 'firstMap' 오브젝트가 할당되지 않았습니다! Inspector를 확인해주세요.", this);
         if (phase2BossObject == null && !isPhase2) Debug.LogError("<b>[T_BossController]</b> 'phase2BossObject'가 할당되지 않았습니다! 1페이즈 보스의 인스펙터를 확인해주세요.", this);
-        if ((ultimateSlashEffect1Object == null || ultimateSlashEffect2Object == null) && !isPhase2) 
-            Debug.LogWarning("<b>[T_BossController]</b> 필살기 이펙트 오브젝트 중 하나 이상이 할당되지 않아 필살기 연출이 제대로 표시되지 않을 수 있습니다.", this);
+        if ((ultimateSlashEffects == null || ultimateSlashEffects.Length == 0) && !isPhase2) 
+            Debug.LogWarning("<b>[T_BossController]</b> 필살기 이펙트 배열이 비어있어 필살기 연출이 제대로 표시되지 않을 수 있습니다.", this);
         if (screenFadeImage == null) Debug.LogError("<b>[T_BossController]</b> 'screenFadeImage' UI 이미지가 할당되지 않았습니다! Inspector를 확인해주세요.", this);
         if (bossHealthUI == null) Debug.LogError("<b>[T_BossController]</b> BossHealthUI가 할당되지 않았습니다! Inspector를 확인해주세요.", this);
         if (shortAttackZoneCollider == null) Debug.LogError("<b>[T_BossController]</b> Short Attack Zone Collider가 할당되지 않았습니다! Inspector를 확인해주세요.", this);
@@ -567,39 +565,49 @@ public class T_BossController : MonoBehaviour
         spriteRenderer.enabled = false;
         if (firstMap != null) firstMap.SetActive(false);
 
-        // 4. 10초 동안 필살기 연출
-        // 4. 필살기 연출 (총 10초)
+        // 4. 필살기 연출
         if (enableDebugLogs) Debug.Log("2페이즈 전환 필살기 시퀀스 시작...");
         
         // 6초간 침묵
         yield return new WaitForSeconds(6.0f);
 
-        // 6초 ~ 7초: 준비 사운드
+        // 준비 사운드
         PlaySound(ultimateChargeSound);
         yield return new WaitForSeconds(1.0f);
 
-        // 7.0초 시점: 첫 번째 참격 (데미지)
-        if (enableDebugLogs) Debug.Log("필살기 1번 발동!");
-        PlaySound(ultimateSlashSound);
-        if (ultimateSlashEffect1Object != null) ultimateSlashEffect1Object.SetActive(true);
-        if (playerTransform != null)
+        // 필살기 시퀀스 (검기 5개 순차 재생)
+        if (ultimateSlashEffects != null)
         {
-            playerTransform.GetComponent<F_PlayerController>()?.HandleAttack(999, gameObject, false); // 패링 불가능한 강력한 데미지
+            for (int i = 0; i < ultimateSlashEffects.Length; i++)
+            {
+                // 이전 이펙트 끄기
+                if (i > 0 && ultimateSlashEffects[i - 1] != null)
+                    ultimateSlashEffects[i - 1].SetActive(false);
+
+                // 현재 이펙트 켜기
+                if (ultimateSlashEffects[i] != null)
+                    ultimateSlashEffects[i].SetActive(true);
+
+                PlaySound(ultimateSlashSound);
+
+                // 첫 번째 공격 때 데미지 적용
+                if (i == 0 && playerTransform != null)
+                {
+                    playerTransform.GetComponent<F_PlayerController>()?.HandleAttack(999, gameObject, false);
+                }
+
+                // 0.15초 대기
+                yield return new WaitForSeconds(0.15f);
+            }
+
+            // 마지막 이펙트 끄기
+            if (ultimateSlashEffects.Length > 0 && ultimateSlashEffects[ultimateSlashEffects.Length - 1] != null)
+                ultimateSlashEffects[ultimateSlashEffects.Length - 1].SetActive(false);
         }
 
-        // 7.3초 시점: 두 번째 참격
-        yield return new WaitForSeconds(0.3f);
-        if (enableDebugLogs) Debug.Log("필살기 2번 발동!");
-        PlaySound(ultimateSlashSound);
-        if (ultimateSlashEffect2Object != null) ultimateSlashEffect2Object.SetActive(true);
+        // 모든 검기가 끝나고 1.2초 대기
+        yield return new WaitForSeconds(1.2f);
 
-        // 8.0초 시점: 두 이펙트 모두 비활성화
-        yield return new WaitForSeconds(0.7f);
-        if (ultimateSlashEffect1Object != null) ultimateSlashEffect1Object.SetActive(false);
-        if (ultimateSlashEffect2Object != null) ultimateSlashEffect2Object.SetActive(false);
-
-        // 10.0초 시점: 화면 전환 시작 (8초에서 10초까지 2초 대기)
-        yield return new WaitForSeconds(2.0f);
         // 5. 2페이즈 보스 활성화
         if (phase2BossObject == null)
         {

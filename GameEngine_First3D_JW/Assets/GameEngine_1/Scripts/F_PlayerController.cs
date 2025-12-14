@@ -52,6 +52,7 @@ public class F_PlayerController : MonoBehaviour
 
     private Coroutine flashRoutine; 
     private Color defaultColor;     
+    private bool isFlashing = false; // 피격 효과 중인지 확인하는 플래그
 
     // --- 애니메이터 파라미터 ID ---
     private readonly int DoDieTriggerID = Animator.StringToHash("doDie");
@@ -131,6 +132,15 @@ public class F_PlayerController : MonoBehaviour
         }
     }
 
+    void LateUpdate()
+    {
+        // 애니메이터가 매 프레임 색상을 덮어쓰는 문제를 방지하기 위해 LateUpdate에서 색상을 강제로 지정합니다.
+        if (isFlashing && sp != null)
+        {
+            sp.color = new Color(1f, 0.5f, 0.5f, 0.8f); // 요청하신 연한 붉은색
+        }
+    }
+
     void OnCollisionEnter2D(Collision2D collision)
     {
         if (collision.gameObject.CompareTag("Ground")) isGrounded = true;
@@ -147,7 +157,13 @@ public class F_PlayerController : MonoBehaviour
         canRoll = false;   
         isRolling = true;  // 조작 잠금
 
-        if (flashRoutine != null) StopCoroutine(flashRoutine);
+        // [수정] 피격 효과 중 구르면 빨간색이 유지되는 버그 수정
+        if (flashRoutine != null) 
+        {
+            StopCoroutine(flashRoutine);
+            isFlashing = false; // LateUpdate의 색상 덮어쓰기 해제
+            sp.color = defaultColor; // 색상 원상복구
+        }
         
         anim.SetTrigger("doRoll");
         
@@ -211,14 +227,15 @@ public class F_PlayerController : MonoBehaviour
 
     private IEnumerator DamageFlashRoutine()
     {
-        int blinkCount = 2; 
+        int blinkCount = 3; 
         float blinkDuration = 0.1f; 
 
         for (int i = 0; i < blinkCount; i++)
         {
-            sp.color = new Color(1f, 0.5f, 0.5f, 0.8f); 
+            isFlashing = true; // LateUpdate에서 색상 적용 활성화
             yield return new WaitForSeconds(blinkDuration);
-            sp.color = defaultColor; 
+            isFlashing = false; // 색상 적용 비활성화
+            if (sp != null) sp.color = defaultColor; // 원래 색으로 복구
             yield return new WaitForSeconds(blinkDuration);
         }
         flashRoutine = null;
@@ -289,6 +306,13 @@ public class F_PlayerController : MonoBehaviour
             Debug.Log("<b>[패링 성공!]</b>");
             PlaySound(parrySuccessSound);
 
+            // 패링 성공 시 화면 흔들림 효과 호출
+            F_GameManager gameManager = FindFirstObjectByType<F_GameManager>();
+            if (gameManager != null)
+            {
+                gameManager.TriggerParryShake();
+            }
+
             // 패링 시 데미지를 입히는 공격인지 확인합니다.
             if (isParryDamageable)
             {
@@ -327,7 +351,12 @@ public class F_PlayerController : MonoBehaviour
             }
 
             // 데미지 시각 효과를 게임 매니저 존재 여부와 상관없이 실행합니다.
-            if (flashRoutine != null) StopCoroutine(flashRoutine);
+            if (flashRoutine != null) 
+            {
+                StopCoroutine(flashRoutine);
+                isFlashing = false; // 기존 플래그 초기화
+            }
+            
             sp.color = defaultColor; // 깜빡임이 중첩될 경우를 대비해 기본 색상으로 초기화
             flashRoutine = StartCoroutine(DamageFlashRoutine());
         }

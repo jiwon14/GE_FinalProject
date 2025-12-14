@@ -155,9 +155,9 @@ RectTransform:
   - {fileID: 312503203}
   m_Father: {fileID: 879683472}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-  m_AnchorMin: {x: 0, y: 1}
-  m_AnchorMax: {x: 0, y: 1}
-  m_AnchoredPosition: {x: 81.9, y: -99}
+  m_AnchorMin: {x: 0, y: 0}
+  m_AnchorMax: {x: 0, y: 0}
+  m_AnchoredPosition: {x: 66, y: -25}
   m_SizeDelta: {x: 100, y: 100}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &55870569
@@ -569,6 +569,7 @@ GameObject:
   m_Component:
   - component: {fileID: 449682873}
   - component: {fileID: 449682872}
+  - component: {fileID: 449682874}
   m_Layer: 0
   m_Name: GameManager_Hp
   m_TagString: Untagged
@@ -588,15 +589,18 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2121222df5568634fa2b1531aa339442, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  playerMaxHealth: 5
+  playerMaxHealth: 10
   playerCurrentHealth: 0
   playerController: {fileID: 1758725811}
-  hearts:
+  heartImages:
   - {fileID: 184433784}
   - {fileID: 462596575}
   - {fileID: 1485006792}
   - {fileID: 74562134}
   - {fileID: 312503204}
+  fullHeartSprite: {fileID: 21300000, guid: 306da5bf87e993e4ab67cf00c0d98a94, type: 3}
+  brokenHeartSprite: {fileID: 21300000, guid: a5a7c81b21f4a8b40a08b7a84a07a5ec, type: 3}
+  parryImpulseForce: 1.2
 --- !u!4 &449682873
 Transform:
   m_ObjectHideFlags: 0
@@ -612,6 +616,59 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &449682874
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 449682871}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 180ecf9b41d478f468eb3e9083753217, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  ImpulseDefinition:
+    ImpulseChannel: -1
+    ImpulseShape: 2
+    CustomImpulseShape:
+      serializedVersion: 2
+      m_Curve: []
+      m_PreInfinity: 2
+      m_PostInfinity: 2
+      m_RotationOrder: 4
+    ImpulseDuration: 0.2
+    ImpulseType: 0
+    DissipationRate: 0.25
+    RawSignal: {fileID: 0}
+    AmplitudeGain: 1
+    FrequencyGain: 1
+    RepeatMode: 0
+    Randomize: 1
+    TimeEnvelope:
+      AttackShape:
+        serializedVersion: 2
+        m_Curve: []
+        m_PreInfinity: 2
+        m_PostInfinity: 2
+        m_RotationOrder: 4
+      DecayShape:
+        serializedVersion: 2
+        m_Curve: []
+        m_PreInfinity: 2
+        m_PostInfinity: 2
+        m_RotationOrder: 4
+      AttackTime: 0
+      SustainTime: 0.2
+      DecayTime: 0.7
+      ScaleWithImpact: 1
+      HoldForever: 0
+    ImpactRadius: 100
+    DirectionMode: 0
+    DissipationMode: 2
+    DissipationDistance: 100
+    PropagationSpeed: 343
+  DefaultVelocity: {x: 0, y: -1, z: 0}
 --- !u!1 &462596573
 GameObject:
   m_ObjectHideFlags: 0
@@ -1124,7 +1181,7 @@ Transform:
   m_GameObject: {fileID: 1071293395}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -42.193592, y: 21.41, z: -10}
+  m_LocalPosition: {x: -47.04767, y: 21.41, z: -10}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -1512,7 +1569,7 @@ Transform:
   m_GameObject: {fileID: 1403088242}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -35.48862, y: 23.620506, z: -10}
+  m_LocalPosition: {x: -39.484844, y: 21.409996, z: -10}
   m_LocalScale: {x: 1.5110753, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
