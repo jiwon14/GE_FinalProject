@@ -76,8 +76,14 @@ public class F_GameManager : MonoBehaviour
     // 체력 UI 업데이트
     void UpdateHealthUI()
     {
+        // UI 변수가 연결되지 않았다면(null이라면) 실행하지 않음
+        if (heartImages == null) return;
+
         for (int i = 0; i < heartImages.Length; i++)
         {
+            // 배열 내부의 요소가 null인 경우 건너뜀
+            if (heartImages[i] == null) continue;
+
             if (playerCurrentHealth >= (i * 2) + 2)
             {
                 heartImages[i].sprite = fullHeartSprite;

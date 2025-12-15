@@ -2126,7 +2126,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ae1a6b6de641522478ca798088ea02aa, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  nextSceneName: Scene5_FBoss
+  nextSceneName: Scene4_FBoss
   dialogueList:
   - speakerName: Player
     sentence: 1

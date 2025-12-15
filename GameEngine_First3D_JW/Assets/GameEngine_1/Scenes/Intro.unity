@@ -735,7 +735,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   textDisplay: {fileID: 1474330977}
   nextIcon: {fileID: 413495983}
-  nextSceneName: Scene1_TBoss
+  nextSceneName: Scene1_Control
   sentences:
   - GAME START
   - "\"\uC73C\uC544\uC544\uC544\uC545!\"  \u25BC"
