@@ -1108,8 +1108,8 @@ MonoBehaviour:
     \t\t\t\t\uD328\uB9C1: D                                     \n        \t\t\t\t\uAD6C\uB974\uAE30:
     Shift                                 \n"
   m_isRightToLeft: 0
-  m_fontAsset: {fileID: 11400000, guid: 26483edd89ba87e4c80bf889e6beddbe, type: 2}
-  m_sharedMaterial: {fileID: -3704980809890729942, guid: 26483edd89ba87e4c80bf889e6beddbe, type: 2}
+  m_fontAsset: {fileID: 11400000, guid: ef002fdd2cdd03c4c84cb0d702a6aa68, type: 2}
+  m_sharedMaterial: {fileID: 3180402105121613082, guid: ef002fdd2cdd03c4c84cb0d702a6aa68, type: 2}
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
   m_fontMaterials: []
@@ -1999,7 +1999,7 @@ Transform:
   m_GameObject: {fileID: 1071293395}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -42.193592, y: 21.41, z: -10}
+  m_LocalPosition: {x: -47.04933, y: 21.41, z: -10}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -2349,7 +2349,7 @@ Transform:
   m_GameObject: {fileID: 1403088242}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -35.488598, y: 23.620506, z: -10}
+  m_LocalPosition: {x: -39.489204, y: 21.409996, z: -10}
   m_LocalScale: {x: 1.5110753, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -3411,6 +3411,8 @@ MonoBehaviour:
   parryWindow: 0.25
   parryCooldown: 1
   parrySuccessSound: {fileID: 8300000, guid: 2cdda754db412c44eadb2d9174771ef4, type: 3}
+  knockbackForce: 5
+  knockbackDuration: 0.3
   deathSceneName: PlayerDied
 --- !u!50 &1758725812
 Rigidbody2D:

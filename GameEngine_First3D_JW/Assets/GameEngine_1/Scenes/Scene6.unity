@@ -315,8 +315,8 @@ MonoBehaviour:
       m_Calls: []
   m_text: "\u25BC SPACE"
   m_isRightToLeft: 0
-  m_fontAsset: {fileID: 11400000, guid: 26483edd89ba87e4c80bf889e6beddbe, type: 2}
-  m_sharedMaterial: {fileID: -3704980809890729942, guid: 26483edd89ba87e4c80bf889e6beddbe, type: 2}
+  m_fontAsset: {fileID: 11400000, guid: ef002fdd2cdd03c4c84cb0d702a6aa68, type: 2}
+  m_sharedMaterial: {fileID: 3180402105121613082, guid: ef002fdd2cdd03c4c84cb0d702a6aa68, type: 2}
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
   m_fontMaterials: []
@@ -735,7 +735,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   textDisplay: {fileID: 1474330977}
   nextIcon: {fileID: 413495983}
-  nextSceneName: Scene6_TBoss
+  nextSceneName: Scene7_TBoss
   sentences:
   - GAME START
   - "\"\uC73C\uC544\uC544\uC544\uC545!\"  \u25BC"

@@ -558,6 +558,7 @@ RectTransform:
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 697606574}
+  - {fileID: 1907622711}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
@@ -793,7 +794,7 @@ Transform:
   m_GameObject: {fileID: 1071293395}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -47.05561, y: 21.41, z: -10}
+  m_LocalPosition: {x: -47.04933, y: 21.41, z: -10}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -937,8 +938,8 @@ MonoBehaviour:
       m_Calls: []
   m_text: ' '
   m_isRightToLeft: 0
-  m_fontAsset: {fileID: 11400000, guid: 26483edd89ba87e4c80bf889e6beddbe, type: 2}
-  m_sharedMaterial: {fileID: -3704980809890729942, guid: 26483edd89ba87e4c80bf889e6beddbe, type: 2}
+  m_fontAsset: {fileID: 11400000, guid: ef002fdd2cdd03c4c84cb0d702a6aa68, type: 2}
+  m_sharedMaterial: {fileID: 3180402105121613082, guid: ef002fdd2cdd03c4c84cb0d702a6aa68, type: 2}
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
   m_fontMaterials: []
@@ -962,8 +963,8 @@ MonoBehaviour:
   m_faceColor:
     serializedVersion: 2
     rgba: 4294967295
-  m_fontSize: 20
-  m_fontSizeBase: 20
+  m_fontSize: 36
+  m_fontSizeBase: 36
   m_fontWeight: 400
   m_enableAutoSizing: 0
   m_fontSizeMin: 18
@@ -1073,8 +1074,8 @@ MonoBehaviour:
       m_Calls: []
   m_text: New Text
   m_isRightToLeft: 0
-  m_fontAsset: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
-  m_sharedMaterial: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
+  m_fontAsset: {fileID: 11400000, guid: ef002fdd2cdd03c4c84cb0d702a6aa68, type: 2}
+  m_sharedMaterial: {fileID: 3180402105121613082, guid: ef002fdd2cdd03c4c84cb0d702a6aa68, type: 2}
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
   m_fontMaterials: []
@@ -1136,7 +1137,7 @@ MonoBehaviour:
   m_VertexBufferAutoSizeReduction: 0
   m_useMaxVisibleDescender: 1
   m_pageToDisplay: 1
-  m_margin: {x: 0, y: 0, z: -72.244385, w: 0}
+  m_margin: {x: 0, y: 0, z: -715.27954, w: 0}
   m_isUsingLegacyAnimationComponent: 0
   m_isVolumetricText: 0
   m_hasFontAssetChanged: 0
@@ -1316,7 +1317,7 @@ Transform:
   m_GameObject: {fileID: 1403088242}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -39.505722, y: 21.409996, z: -10}
+  m_LocalPosition: {x: -39.489204, y: 21.409996, z: -10}
   m_LocalScale: {x: 1.5110753, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -2097,6 +2098,96 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1892635769}
   m_CullTransparentMesh: 1
+--- !u!1 &1907622710
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1907622711}
+  - component: {fileID: 1907622713}
+  - component: {fileID: 1907622712}
+  - component: {fileID: 1907622714}
+  m_Layer: 5
+  m_Name: FadePanel
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!224 &1907622711
+RectTransform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1907622710}
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 879683472}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+  m_AnchorMin: {x: 0, y: 0}
+  m_AnchorMax: {x: 1, y: 1}
+  m_AnchoredPosition: {x: 0, y: 0}
+  m_SizeDelta: {x: 0, y: 0}
+  m_Pivot: {x: 0.5, y: 0.5}
+--- !u!114 &1907622712
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1907622710}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fe87c0e1cc204ed48ad3b37840f39efc, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_Material: {fileID: 0}
+  m_Color: {r: 0, g: 0, b: 0, a: 1}
+  m_RaycastTarget: 0
+  m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
+  m_Maskable: 1
+  m_OnCullStateChanged:
+    m_PersistentCalls:
+      m_Calls: []
+  m_Sprite: {fileID: 10907, guid: 0000000000000000f000000000000000, type: 0}
+  m_Type: 1
+  m_PreserveAspect: 0
+  m_FillCenter: 1
+  m_FillMethod: 4
+  m_FillAmount: 1
+  m_FillClockwise: 1
+  m_FillOrigin: 0
+  m_UseSpriteMesh: 0
+  m_PixelsPerUnitMultiplier: 1
+--- !u!222 &1907622713
+CanvasRenderer:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1907622710}
+  m_CullTransparentMesh: 1
+--- !u!114 &1907622714
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1907622710}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5458656e3323d01469f044cf94a6eaba, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  fadePanel: {fileID: 1907622712}
+  fadeTime: 3
 --- !u!1 &1922418330
 GameObject:
   m_ObjectHideFlags: 0
@@ -2126,16 +2217,42 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ae1a6b6de641522478ca798088ea02aa, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  nextSceneName: Scene6
+  nextSceneName: Scene4_FBoss
   dialogueList:
+  - speakerName: ...
+    sentence: "\u201C\uC815\uC2E0\uC774 \uB4DC\uB098?\u201D"
   - speakerName: Player
-    sentence: 1
-  - speakerName: Boss
-    sentence: 2
+    sentence: "(\uBA38\uB9AC\uAC00 \uAE68\uC9C8 \uAC83 \uAC19\uAD70...)"
   - speakerName: Player
-    sentence: 3
+    sentence: "(\uB0B4\uAC00 \uC5B4\uB5BB\uAC8C \uC0B4\uC544\uC788\uB294\uAC70\uC9C0?)"
+  - speakerName: ...
+    sentence: "\"\uC774\uAC70\uB77C\uB3C4 \uB9C8\uC2DC\uAC8C.\" (\uBB3C\uD1B5\uC744
+      \uAC74\uB128\uB2E4)"
   - speakerName: Player
-    sentence: 4
+    sentence: "(\uBC8C\uCEE5\uBC8C\uCEE5) \"...\uD6C4\uC6B0 \uAD6C\uD574\uC8FC\uC154\uC11C
+      \uAC10\uC0AC\uD569\uB2C8\uB2E4.\""
+  - speakerName: ...
+    sentence: "\"\uC6B4\uC774 \uC88B\uC558\uC5B4. \uD558\uC9C0\uB9CC \uB450 \uBC88\uC758
+      \uD589\uC6B4\uC740 \uC5C6\uC744 \uAC78\uC138. \uB140\uC11D\uC5D0\uAC8C \uB364\uBE44\uB294
+      \uAC74 \uC790\uB124\uC5D0\uAC90 \uBD88\uAC00\uB2A5\uD55C \uB3C4\uC804\uC774\uC600\uB124.\""
+  - speakerName: Player
+    sentence: "\"\uD558\uC9C0\uB9CC \uB140\uC11D\uC774 \uC81C \uBAA8\uB4E0 \uAC78
+      \uC557\uC544\uAC14\uC2B5\uB2C8\uB2E4! \uC774\uB300\uB85C \uB05D\uB0BC \uC21C...\"\n"
+  - speakerName: Player
+    sentence: "\"\uADF8\uB7FC \uD798\uC744 \uAE30\uB974\uAC8C. \uC57D\uD55C \uC790\uB294
+      \uC2AC\uD37C\uD560 \uC790\uACA9\uC870\uCC28 \uC5C6\uB294 \uBC95\uC774\uB2C8\uAE4C.\""
+  - speakerName: Player
+    sentence: "\"\uAC15\uD574\uC9C0\uACE0 \uC2F6\uC2B5\uB2C8\uB2E4. \uB140\uC11D\uC744
+      \uAEBE\uC744 \uC218\uB9CC \uC788\uB2E4\uBA74 \uBB34\uC5C7\uC774\uB4E0 \uD558\uACA0\uC2B5\uB2C8\uB2E4.\"\n"
+  - speakerName: ...
+    sentence: "\"\uC88B\uC544. \uB0B4\uC77C \uC774 \uC2DC\uAC04\uC5D0, \uC774\uACF3\uC5D0\uC11C
+      \uC790\uB124\uB97C \uAE30\uB2E4\uB9AC\uC9C0.\""
+  - speakerName: Player
+    sentence: "\"\uC54C\uACA0\uC2B5\uB2C8\uB2E4. ...\uC131\uD568\uC744 \uC54C \uC218
+      \uC788\uACA0\uC2B5\uB2C8\uAE4C?\""
+  - speakerName: "\uB85C\uB4DC\uB9AD"
+    sentence: "\"\uB85C\uB4DC\uB9AD\uC774\uB2E4. '\uCCA0\uD608\uC758 \uAE30\uC0AC',
+      \uB85C\uB4DC\uB9AD.\""
   nameText: {fileID: 1255849746}
   sentenceText: {fileID: 1281748798}
 --- !u!4 &1922418332
