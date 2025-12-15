@@ -16,13 +16,16 @@ EditorBuildSettings:
     guid: 3c52da26a18e4eb4ab13d955b166bfd1
   - enabled: 1
     path: Assets/GameEngine_1/Scenes/Scene3.unity
-    guid: 73d54a2a7cf62d540a874aa81b442acb
+    guid: e1120f66909e46641921ffa8b5b23c04
   - enabled: 1
     path: Assets/GameEngine_1/Scenes/Scene3.unity
     guid: e1120f66909e46641921ffa8b5b23c04
   - enabled: 1
     path: Assets/GameEngine_1/Scenes/Scene4_FBoss.unity
     guid: 0f278d7c32cbebe45992dd3d91fa858b
+  - enabled: 1
+    path: Assets/GameEngine_1/Scenes/Scene5.unity
+    guid: 8df8d7bf57998ff43a553c75ac97bad5
   - enabled: 1
     path: Assets/GameEngine_1/Scenes/Scene6.unity
     guid: bbd3a32651a548f43986bbbc566137be

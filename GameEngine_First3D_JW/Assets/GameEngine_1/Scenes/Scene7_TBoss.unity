@@ -1720,7 +1720,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!95 &476264580
 Animator:
   serializedVersion: 7
@@ -2013,9 +2013,10 @@ MonoBehaviour:
   - {fileID: 644590732}
   ultimateChargeSound: {fileID: 8300000, guid: 85e1a535587f2204580ccbb69af75051, type: 3}
   ultimateSlashSound: {fileID: 8300000, guid: 5adcd625494ca074a8540530d594dda9, type: 3}
+  ultimateGlassBreakSound: {fileID: 8300000, guid: 517721baea1707248a7aac1e7b333a64, type: 3}
   attackSound: {fileID: 0}
   dieSound: {fileID: 0}
-  bossBgm: {fileID: 0}
+  bossBgm: {fileID: 8300000, guid: 4dff59258b5e33a44b0fd14035b85fec, type: 3}
   soundEffects:
   - name: Attack1.1
     clip: {fileID: 8300000, guid: f656109deb806d2498acf46c8e2b0495, type: 3}
@@ -4546,7 +4547,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!95 &1322288993
 Animator:
   serializedVersion: 7
@@ -4845,7 +4846,7 @@ MonoBehaviour:
   attackForceFinishTime: 4
   attackSound: {fileID: 0}
   dieSound: {fileID: 0}
-  bossBgm: {fileID: 0}
+  bossBgm: {fileID: 8300000, guid: 9fa6c5375e8b85445905af4696c7204a, type: 3}
   soundEffects: []
 --- !u!1 &1403088242
 GameObject:
@@ -5027,7 +5028,6 @@ GameObject:
   m_Component:
   - component: {fileID: 1407804020}
   - component: {fileID: 1407804019}
-  - component: {fileID: 1407804018}
   m_Layer: 0
   m_Name: BGM
   m_TagString: Untagged
@@ -5035,20 +5035,6 @@ GameObject:
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!114 &1407804018
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1407804017}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 3c112038db410f74db6e05c9c26eb06d, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  bgmClip: {fileID: 8300000, guid: 54c0f5e8f01366a45aee309292807bb4, type: 3}
-  volume: 0.5
 --- !u!82 &1407804019
 AudioSource:
   m_ObjectHideFlags: 0
