@@ -533,7 +533,7 @@ BoxCollider2D:
   m_UsedByEffector: 0
   m_CompositeOperation: 0
   m_CompositeOrder: 0
-  m_Offset: {x: 3.3282628, y: 0.99504423}
+  m_Offset: {x: 5.2581162, y: 0.99504423}
   m_SpriteTilingProperty:
     border: {x: 0, y: 0, z: 0, w: 0}
     pivot: {x: 0, y: 0}
@@ -543,7 +543,7 @@ BoxCollider2D:
     drawMode: 0
     adaptiveTiling: 0
   m_AutoTiling: 0
-  m_Size: {x: 3.2943478, y: 7.8231535}
+  m_Size: {x: 7.1540537, y: 7.8231535}
   m_EdgeRadius: 0
 --- !u!1 &312503202
 GameObject:
@@ -1638,8 +1638,8 @@ CircleCollider2D:
   m_UsedByEffector: 0
   m_CompositeOperation: 0
   m_CompositeOrder: 0
-  m_Offset: {x: 7.177229, y: 0}
-  m_Radius: 7.677229
+  m_Offset: {x: 6.359494, y: 0}
+  m_Radius: 6.859494
 --- !u!114 &888517656
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1999,7 +1999,7 @@ Transform:
   m_GameObject: {fileID: 1071293395}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -47.04933, y: 21.41, z: -10}
+  m_LocalPosition: {x: -47.054245, y: 21.41, z: -10}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -2349,7 +2349,7 @@ Transform:
   m_GameObject: {fileID: 1403088242}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -39.489204, y: 21.409996, z: -10}
+  m_LocalPosition: {x: -39.502163, y: 21.409996, z: -10}
   m_LocalScale: {x: 1.5110753, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -3411,6 +3411,7 @@ MonoBehaviour:
   parryWindow: 0.25
   parryCooldown: 1
   parrySuccessSound: {fileID: 8300000, guid: 2cdda754db412c44eadb2d9174771ef4, type: 3}
+  deathSound: {fileID: 8300000, guid: a3277311ff7ac6940b100452d595790c, type: 3}
   knockbackForce: 5
   knockbackDuration: 0.3
   deathSceneName: PlayerDied

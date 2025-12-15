@@ -1892,7 +1892,7 @@ MonoBehaviour:
   - {fileID: 863716496}
   - {fileID: 2088211756}
   - {fileID: 644590732}
-  ultimateChargeSound: {fileID: 8300000, guid: 85e1a535587f2204580ccbb69af75051, type: 3}
+  ultimateChargeSound: {fileID: 8300000, guid: 6e5ff6cca351d9e46b20aa1c324ea7ee, type: 3}
   ultimateSlashSound: {fileID: 8300000, guid: 5adcd625494ca074a8540530d594dda9, type: 3}
   ultimateGlassBreakSound: {fileID: 8300000, guid: 517721baea1707248a7aac1e7b333a64, type: 3}
   attackSound: {fileID: 0}

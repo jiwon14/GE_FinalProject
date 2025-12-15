@@ -38,6 +38,7 @@ public class F_PlayerController : MonoBehaviour
 
     [Header("사운드 설정")]
     public AudioClip parrySuccessSound; 
+    public AudioClip deathSound;
     // public AudioClip rollSound; 
 
     [Header("피격 및 넉백")]
@@ -406,5 +407,13 @@ public class F_PlayerController : MonoBehaviour
     private void PlaySound(AudioClip clip)
     {
         if (audioSource != null && clip != null) audioSource.PlayOneShot(clip);
+    }
+
+    public void PlayDeathSound()
+    {
+        if (deathSound != null)
+        {
+            PlaySound(deathSound);
+        }
     }
 }

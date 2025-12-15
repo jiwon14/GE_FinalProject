@@ -794,7 +794,7 @@ Transform:
   m_GameObject: {fileID: 1071293395}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -47.05561, y: 21.41, z: -10}
+  m_LocalPosition: {x: -47.054245, y: 21.41, z: -10}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -1317,7 +1317,7 @@ Transform:
   m_GameObject: {fileID: 1403088242}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -39.505722, y: 21.409996, z: -10}
+  m_LocalPosition: {x: -39.502163, y: 21.409996, z: -10}
   m_LocalScale: {x: 1.5110753, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -1568,6 +1568,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   bgmClip: {fileID: 8300000, guid: 2c6150b59d9932842906d7af633ca9f6, type: 3}
   volume: 0.5
+  isLoop: 1
+  loopStartTime: 0
+  loopEndTime: 0
 --- !u!82 &1680267246
 AudioSource:
   m_ObjectHideFlags: 0
@@ -2238,7 +2241,7 @@ MonoBehaviour:
   - speakerName: Player
     sentence: "\"\uD558\uC9C0\uB9CC \uB140\uC11D\uC774 \uC81C \uBAA8\uB4E0 \uAC78
       \uC557\uC544\uAC14\uC2B5\uB2C8\uB2E4! \uC774\uB300\uB85C \uB05D\uB0BC \uC21C...\"\n"
-  - speakerName: Player
+  - speakerName: ...
     sentence: "\"\uADF8\uB7FC \uD798\uC744 \uAE30\uB974\uAC8C. \uC57D\uD55C \uC790\uB294
       \uC2AC\uD37C\uD560 \uC790\uACA9\uC870\uCC28 \uC5C6\uB294 \uBC95\uC774\uB2C8\uAE4C.\""
   - speakerName: Player

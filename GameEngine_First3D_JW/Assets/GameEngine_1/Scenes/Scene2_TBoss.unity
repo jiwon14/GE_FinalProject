@@ -409,6 +409,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   damage: 1
+  enableKnockback: 1
   causesDamageOnParry: 0
 --- !u!1 &163651223
 GameObject:
@@ -787,6 +788,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   damage: 1
+  enableKnockback: 1
   causesDamageOnParry: 1
 --- !u!1 &351456410
 GameObject:
@@ -1364,6 +1366,7 @@ MonoBehaviour:
   ultimateSlashEffects: []
   ultimateChargeSound: {fileID: 8300000, guid: 85e1a535587f2204580ccbb69af75051, type: 3}
   ultimateSlashSound: {fileID: 8300000, guid: c6e8e809fd3b9c641a6499c5b2e0b8cb, type: 3}
+  ultimateGlassBreakSound: {fileID: 0}
   attackSound: {fileID: 0}
   dieSound: {fileID: 0}
   bossBgm: {fileID: 0}
@@ -1453,6 +1456,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   damage: 1
+  enableKnockback: 1
   causesDamageOnParry: 1
 --- !u!61 &499349460
 BoxCollider2D:
@@ -1835,6 +1839,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   damage: 1
+  enableKnockback: 1
   causesDamageOnParry: 1
 --- !u!1 &659217149
 GameObject:
@@ -1956,6 +1961,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   damage: 1
+  enableKnockback: 1
   causesDamageOnParry: 1
 --- !u!1 &693078392
 GameObject:
@@ -2080,6 +2086,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   damage: 1
+  enableKnockback: 1
   causesDamageOnParry: 0
 --- !u!212 &739598540
 SpriteRenderer:
@@ -2596,6 +2603,7 @@ MonoBehaviour:
   ultimateSlashEffects: []
   ultimateChargeSound: {fileID: 0}
   ultimateSlashSound: {fileID: 0}
+  ultimateGlassBreakSound: {fileID: 0}
   attackSound: {fileID: 0}
   dieSound: {fileID: 0}
   bossBgm: {fileID: 0}
@@ -3000,6 +3008,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   damage: 1
+  enableKnockback: 1
   causesDamageOnParry: 1
 --- !u!1 &1113616902
 GameObject:
@@ -3379,6 +3388,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   damage: 1
+  enableKnockback: 1
   causesDamageOnParry: 1
 --- !u!61 &1213009700
 BoxCollider2D:
@@ -3501,6 +3511,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   damage: 1
+  enableKnockback: 1
   causesDamageOnParry: 0
 --- !u!212 &1232700700
 SpriteRenderer:
@@ -3656,7 +3667,7 @@ Transform:
   m_GameObject: {fileID: 1303494746}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: -15.9, y: 15.100002, z: 0.10590713}
+  m_LocalPosition: {x: -12.3, y: 15.100002, z: 0.10590713}
   m_LocalScale: {x: 1.94643, y: 1.6067799, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -3805,7 +3816,7 @@ Transform:
   m_GameObject: {fileID: 1403088242}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -45.9529, y: 29.766647, z: -10}
+  m_LocalPosition: {x: -57.810005, y: 29.766644, z: -10}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -3917,7 +3928,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 3c112038db410f74db6e05c9c26eb06d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  bgmClip: {fileID: 8300000, guid: 54c0f5e8f01366a45aee309292807bb4, type: 3}
+  bgmClip: {fileID: 8300000, guid: 23e7f1ff77fba1d42b7a1c19941c903c, type: 3}
   volume: 0.5
 --- !u!82 &1407804019
 AudioSource:
@@ -4194,6 +4205,8 @@ MonoBehaviour:
   parryWindow: 0.25
   parryCooldown: 1
   parrySuccessSound: {fileID: 8300000, guid: 2cdda754db412c44eadb2d9174771ef4, type: 3}
+  knockbackForce: 5
+  knockbackDuration: 0.3
   deathSceneName: Scene3
 --- !u!50 &1434073476
 Rigidbody2D:
@@ -4639,6 +4652,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   damage: 1
+  enableKnockback: 1
   causesDamageOnParry: 1
 --- !u!61 &1532486332
 BoxCollider2D:
@@ -4760,6 +4774,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   damage: 1
+  enableKnockback: 1
   causesDamageOnParry: 1
 --- !u!61 &1577317770
 BoxCollider2D:
@@ -5150,6 +5165,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   damage: 1
+  enableKnockback: 1
   causesDamageOnParry: 1
 --- !u!1 &1667309450
 GameObject:
@@ -5584,6 +5600,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   damage: 1
+  enableKnockback: 1
   causesDamageOnParry: 0
 --- !u!1 &1846879979
 GameObject:
@@ -5666,7 +5683,7 @@ Transform:
   m_GameObject: {fileID: 1846879979}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: -15.9, y: 15.1, z: 0.10590713}
+  m_LocalPosition: {x: -12.3, y: 15.1, z: 0.10590713}
   m_LocalScale: {x: 1.9464337, y: 1.6067777, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -6044,6 +6061,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   damage: 1
+  enableKnockback: 1
   causesDamageOnParry: 1
 --- !u!1 &2076430055
 GameObject:
@@ -6092,6 +6110,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   damage: 1
+  enableKnockback: 1
   causesDamageOnParry: 1
 --- !u!61 &2076430058
 BoxCollider2D:
@@ -6213,6 +6232,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   damage: 1
+  enableKnockback: 1
   causesDamageOnParry: 1
 --- !u!61 &2094525087
 BoxCollider2D:
