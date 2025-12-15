@@ -81,6 +81,8 @@ public class T_BossController : MonoBehaviour
     public AudioClip ultimateChargeSound;
     [Tooltip("필살기 발동 사운드입니다. (참격 소리)")]
     public AudioClip ultimateSlashSound;
+    [Tooltip("참격이 끝난 후 유리창 깨지는 소리입니다.")]
+    public AudioClip ultimateGlassBreakSound;
     [Header("사운드")]
     public AudioClip attackSound;
     public AudioClip dieSound;
@@ -624,8 +626,10 @@ public class T_BossController : MonoBehaviour
                 ultimateSlashEffects[ultimateSlashEffects.Length - 1].SetActive(false);
         }
 
-        // 모든 검기가 끝나고 1.2초 대기
-        yield return new WaitForSeconds(1.2f);
+        // 참격이 다 끝나고 0.2초 대기 후 유리창 깨지는 소리 재생
+        yield return new WaitForSeconds(0.2f);
+        PlaySound(ultimateGlassBreakSound);
+        yield return new WaitForSeconds(1.0f); // 연출을 위한 나머지 대기 시간
 
         // 5. 2페이즈 보스 활성화
         if (phase2BossObject == null)
@@ -923,7 +927,7 @@ public class T_BossController : MonoBehaviour
     // 모든 공격 히트박스(자식 오브젝트)를 비활성화하는 함수
     private void DisableAllAttackHitboxes()
     {
-        T_BossHitbox[] hitboxes = GetComponentsInChildren<T_BossHitbox>();
+        S_BossHitbox[] hitboxes = GetComponentsInChildren<S_BossHitbox>();
         foreach (var hitbox in hitboxes)
         {
             // 보스 본체가 아닌 경우(자식 히트박스) 오브젝트 자체를 비활성화하여 확실하게 끕니다.

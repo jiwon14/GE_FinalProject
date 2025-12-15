@@ -9,6 +9,9 @@ public class T_BossHitbox : MonoBehaviour
 {
     [Tooltip("이 히트박스가 가하는 기본 데미지")]
     [SerializeField] private int damage = 1;
+    [Tooltip("피격 시 넉백을 적용할지 여부입니다.")]
+    public bool enableKnockback = true;
+
     [Tooltip("이 히트박스를 패링했을 때 보스가 데미지와 스턴을 입는지 설정합니다.")]
     public bool causesDamageOnParry = true;
 
@@ -42,7 +45,7 @@ public class T_BossHitbox : MonoBehaviour
             hitColliders.Add(other);
 
             // 플레이어 컨트롤러를 찾아 HandleAttack 함수를 호출합니다.
-            other.GetComponent<F_PlayerController>()?.HandleAttack(damage, bossController.gameObject, causesDamageOnParry);
+            other.GetComponent<F_PlayerController>()?.HandleAttack(damage, bossController.gameObject, causesDamageOnParry, enableKnockback);
         }
     }
 }
