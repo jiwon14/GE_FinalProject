@@ -15,7 +15,7 @@ EditorBuildSettings:
     path: Assets/GameEngine_1/Scenes/Scene2_TBoss.unity
     guid: 3c52da26a18e4eb4ab13d955b166bfd1
   - enabled: 1
-    path: Assets/GameEngine_1/Scenes/Scene3.unity
+    path: Assets/GameEngine_1/Scenes/Scene2.unity
     guid: 73d54a2a7cf62d540a874aa81b442acb
   - enabled: 1
     path: Assets/GameEngine_1/Scenes/Scene3.unity
