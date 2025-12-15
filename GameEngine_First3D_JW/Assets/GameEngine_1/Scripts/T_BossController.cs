@@ -927,7 +927,7 @@ public class T_BossController : MonoBehaviour
     // 모든 공격 히트박스(자식 오브젝트)를 비활성화하는 함수
     private void DisableAllAttackHitboxes()
     {
-        T_BossHitbox[] hitboxes = GetComponentsInChildren<T_BossHitbox>();
+        S_BossHitbox[] hitboxes = GetComponentsInChildren<S_BossHitbox>();
         foreach (var hitbox in hitboxes)
         {
             // 보스 본체가 아닌 경우(자식 히트박스) 오브젝트 자체를 비활성화하여 확실하게 끕니다.

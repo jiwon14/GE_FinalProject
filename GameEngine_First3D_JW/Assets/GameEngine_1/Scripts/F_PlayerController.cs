@@ -40,6 +40,11 @@ public class F_PlayerController : MonoBehaviour
     public AudioClip parrySuccessSound; 
     // public AudioClip rollSound; 
 
+    [Header("피격 및 넉백")]
+    public float knockbackForce = 5.0f;
+    public float knockbackDuration = 0.3f;
+    private bool isKnockedBack = false;
+
     [Header("사망 설정")]
     public string deathSceneName; // 사망 시 이동할 씬 이름
 
@@ -71,6 +76,8 @@ public class F_PlayerController : MonoBehaviour
     {
         // 사망 시 모든 입력을 무시합니다.
         if (isDead) return;
+
+        if (isKnockedBack) return; // 넉백 중에는 조작 불가
 
         anim.SetBool("isGrounded", isGrounded);
 
@@ -291,7 +298,7 @@ public class F_PlayerController : MonoBehaviour
         }
     }
 
-    public void HandleAttack(int damage, GameObject attacker, bool isParryDamageable)
+    public void HandleAttack(int damage, GameObject attacker, bool isParryDamageable, bool isKnockback = false)
     {
         // [1] 무적 (회피 성공)
         if (isInvincible)
@@ -334,6 +341,16 @@ public class F_PlayerController : MonoBehaviour
                     t_boss.GetStunned();
                     return;
                 }
+
+                var s_boss = attacker.GetComponent<S_BossController>();
+                if (s_boss != null)
+                {
+                    Debug.Log("S_Boss 공격 패링! 보스에게 데미지와 스턴 적용.");
+                    int parryDamage = 10;
+                    s_boss.TakeDamage(parryDamage);
+                    s_boss.GetStunned();
+                    return;
+                }
             }
             else // isParryDamageable == false
             {
@@ -359,7 +376,31 @@ public class F_PlayerController : MonoBehaviour
             
             sp.color = defaultColor; // 깜빡임이 중첩될 경우를 대비해 기본 색상으로 초기화
             flashRoutine = StartCoroutine(DamageFlashRoutine());
+
+            // 넉백 적용
+            if (isKnockback && attacker != null)
+            {
+                StartCoroutine(KnockbackRoutine(attacker));
+            }
         }
+    }
+
+    private IEnumerator KnockbackRoutine(GameObject attacker)
+    {
+        isKnockedBack = true;
+        anim.SetBool("isRunning", false); // 달리기 애니메이션 중단
+
+        // 공격자 반대 방향으로 밀려남
+        float dir = Mathf.Sign(transform.position.x - attacker.transform.position.x);
+        
+        // X축 넉백 + 약간의 Y축 띄우기 (지면 마찰 무시)
+        rb.linearVelocity = new Vector2(dir * knockbackForce, 3.0f);
+
+        yield return new WaitForSeconds(knockbackDuration);
+
+        isKnockedBack = false;
+        // 넉백이 끝나면 미끄러짐 방지를 위해 속도 0 (공중에 있다면 중력 영향 받음)
+        if (isGrounded) rb.linearVelocity = Vector2.zero;
     }
 
     private void PlaySound(AudioClip clip)

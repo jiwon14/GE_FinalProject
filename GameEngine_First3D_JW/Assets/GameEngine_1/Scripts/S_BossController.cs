@@ -528,7 +528,7 @@ public class S_BossController : MonoBehaviour
 
     private void DisableAllAttackHitboxes()
     {
-        T_BossHitbox[] hitboxes = GetComponentsInChildren<T_BossHitbox>();
+        S_BossHitbox[] hitboxes = GetComponentsInChildren<S_BossHitbox>();
         foreach (var hitbox in hitboxes)
         {
             if (hitbox.gameObject != gameObject)
