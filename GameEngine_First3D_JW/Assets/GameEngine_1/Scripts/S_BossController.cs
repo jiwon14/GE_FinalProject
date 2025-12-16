@@ -310,6 +310,8 @@ public class S_BossController : MonoBehaviour
         {
             animator.SetBool(IsDashingAnimID, false);
             moveDirection = Vector2.zero;
+            // Dashing 상태가 끝나면 방향 전환 잠금을 해제합니다.
+            isDirectionLocked = false;
         }
 
         // [핵심 수정] 상태가 변경될 때, 이전 상태의 물리적 움직임을 즉시 멈춥니다.
@@ -328,6 +330,14 @@ public class S_BossController : MonoBehaviour
         else if (currentState == BossState.Dashing)
         {
             animator.SetBool(IsDashingAnimID, true);
+            // [수정] Dashing(이동) 상태에 진입할 때 한 번만 방향을 결정하고 잠급니다.
+            // 이렇게 하면 이동 중에 플레이어가 뒤로 넘어가도 보스가 방향을 바꾸지 않습니다.
+            FacePlayer();
+            if (playerTransform != null)
+            {
+                moveDirection.x = Mathf.Sign(playerTransform.position.x - transform.position.x);
+            }
+            isDirectionLocked = true;
         }
     }
 
@@ -347,7 +357,9 @@ public class S_BossController : MonoBehaviour
             // 중복 공격 방지
             if (animator.GetCurrentAnimatorStateInfo(0).IsTag("Attack"))
             {
-                // 애니메이션이 아직 끝나지 않았으면 추적만 계속합니다.
+                // 애니메이션이 아직 끝나지 않았으면 새로운 행동을 시작하지 않고 대기합니다.
+                // 이 return 문이 없으면 아래의 HandleMovementAndFacing()이 실행되어 공격 중 움직이는 문제가 발생합니다.
+                return;
             }
             // 일반 공격
             else if (isPlayerInAttackZone)
@@ -407,6 +419,11 @@ public class S_BossController : MonoBehaviour
     void HandleMovementAndFacing()
     {
         if (playerTransform == null) return;
+
+        // [수정] Dashing 또는 Attacking 중에는 isDirectionLocked가 true가 되므로,
+        // 아래의 방향 전환 및 이동 방향 계산 로직이 실행되지 않습니다.
+        // Dashing의 방향은 SetState 진입 시점에 한 번만 결정됩니다.
+        if (isDirectionLocked) return;
 
         float distanceToPlayerX = Mathf.Abs(playerTransform.position.x - transform.position.x);
 
@@ -482,10 +499,10 @@ public class S_BossController : MonoBehaviour
 
         while (timer < duration)
         {
-            // 스턴이나 사망 상태가 되면 회복을 중단합니다.
-            if (currentState == BossState.Stunned || currentState == BossState.Dead)
+            // 사망 상태가 되면 회복을 중단합니다.
+            if (currentState == BossState.Dead)
             {
-                if (enableDebugLogs) Debug.Log("상태 이상으로 체력 회복 중단.");
+                if (enableDebugLogs) Debug.Log("사망으로 인해 체력 회복 중단.");
                 yield break;
             }
             bossHealth.Heal(healPerSecond * Time.deltaTime);
@@ -603,9 +620,6 @@ public class S_BossController : MonoBehaviour
     
     public void TakeDamage(int damage)
     {
-        // 체력 회복 중에는 데미지를 받으면 회복을 중단합니다.
-        StopCoroutine("HealOverTime");
-
         if (currentState == BossState.Dead) return;
         bossHealth.TakeDamage(damage);
     }
@@ -643,7 +657,13 @@ public class S_BossController : MonoBehaviour
     public void GetStunned()
     {
         if (currentState == BossState.Dead || currentState == BossState.Stunned) return;
-        StopAllCoroutines();
+
+        // [수정] StopAllCoroutines() 대신 개별 코루틴을 중지하여, HealOverTime 코루틴이 계속 실행되도록 합니다.
+        StopCoroutine("RegularAttackRoutine");
+        StopCoroutine("JumpAttackRoutine");
+        StopCoroutine("BackdashRoutine");
+        StopCoroutine("ForceFinishAttackRoutine");
+
         StartCoroutine(StunRoutine());
     }
 

@@ -577,7 +577,7 @@ public class T_BossController : MonoBehaviour
         // yield return new WaitForSeconds(deathAnimationTime);
 
         // 2. 화면 암전
-        yield return StartCoroutine(FadeScreen(1f, 0.1f)); // 거의 즉시 검게 변경
+        yield return StartCoroutine(FadeScreen(1f, 0.5f)); // 0.5초에 걸쳐 화면을 검게 변경
 
         // 3. 1페이즈 보스 숨기기 및 맵 교체
         spriteRenderer.enabled = false;

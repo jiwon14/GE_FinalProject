@@ -322,10 +322,19 @@ public class F_BossController : MonoBehaviour
             ApplyScale(isPlayerRight);
         }
 
-        // [수정] 상태를 먼저 Attacking으로 확실하게 변경합니다.
+        // [추가] 공격 범위 내에서도 10% 확률로 돌진을 시도합니다.
+        // 단, 돌진 쿨타임이 지났을 때만 가능합니다.
+        if (Time.time >= lastDashTime + dashCooldown && Random.value < 0.2f) // 20% 확률
+        {
+            SetState(BossState.Dashing);
+            return; // 행동을 결정했으므로 함수 종료
+        }
+
+        // [수정] 80% 확률로 일반 공격을 수행합니다.
+        // 상태를 먼저 Attacking으로 확실하게 변경합니다.
         SetState(BossState.Attacking);
         
-        // Attack1, Attack3, Attack4 중에서 랜덤으로 하나를 선택합니다.
+        // Attack1, Attack3, Attack4(일반 공격) 중에서 랜덤으로 하나를 선택합니다.
         int[] attackChoices = { 1, 3, 4 };
         int choiceIndex = Random.Range(0, attackChoices.Length);
         int chosenAttack = attackChoices[choiceIndex];
