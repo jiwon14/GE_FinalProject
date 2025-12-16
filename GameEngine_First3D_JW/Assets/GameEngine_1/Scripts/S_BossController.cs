@@ -8,12 +8,13 @@ using UnityEngine;
 [RequireComponent(typeof(BossHealth))]
 public class S_BossController : MonoBehaviour
 {
-    // 광폭화 보스 상태
+    // --- Enums and Structs ---
+
     private enum BossState
     {
         Idle,        // 대기 (플레이어가 인식 범위 밖에 있음)
-        Chasing,     // 플레이어 추적 및 행동 결정
-        Dashing,     // 대쉬 중
+        Dashing,     // 대쉬로 추적 중
+        Backdashing, // 백대쉬 중
         Attacking,   // 공격 중
         Stunned,     // 기절
         Dead         // 사망
@@ -26,54 +27,99 @@ public class S_BossController : MonoBehaviour
         public AudioClip clip;
     }
 
+    [System.Serializable]
+    public struct JumpAttackStats
+    {
+        [Tooltip("점프 공격 시 솟아오르는 힘입니다.")]
+        public float upForce;
+        [Tooltip("점프 공격 시 수평 이동 속도입니다.")]
+        public float horizontalSpeed;
+        [Tooltip("점프 공격 시 내려찍는 힘입니다.")]
+        public float downForce;
+        [Tooltip("애니메이션에 맞춰 상승에 걸리는 시간(초)입니다.")]
+        public float ascentDuration;
+        [Tooltip("정점에서 멈춰있는 시간(초)입니다. 0이면 멈추지 않습니다.")]
+        public float apexDelay;
+        [Tooltip("애니메이션에 맞춰 하강에 걸리는 시간(초)입니다.")]
+        public float descentDuration;
+    }
+
+    // --- Inspector Fields ---
+
     [Header("디버그")]
     [Tooltip("활성화하면 보스의 현재 상태와 결정 등 상세 로그를 콘솔에 출력합니다.")]
     public bool enableDebugLogs = true;
 
-    [Header("참조")]
+    [Header("핵심 참조")]
     [Tooltip("플레이어 오브젝트의 Transform을 할당해야 합니다.")]
     public Transform playerTransform;
     [Tooltip("보스 체력 UI 스크립트를 할당해야 합니다.")]
     public BossHealthUI bossHealthUI;
     
-    [Header("Zone 콜라이더 참조")]
-    [Tooltip("플레이어와의 교전을 시작하는 중간 범위의 Zone 콜라이더입니다.")]
-    public Collider2D engagementZoneCollider;
-    [Tooltip("보스가 공격을 시작할 수 있는 근접 범위의 Zone 콜라이더입니다.")]
+    [Header("Zone 콜라이더 참조 (4개)")]
+    [Tooltip("1. 보스가 플레이어를 인지하는 가장 바깥쪽 범위입니다.")]
+    public Collider2D trackingZoneCollider;
+    [Tooltip("2. 플레이어가 너무 가까울 때 백대쉬를 사용하는 가장 안쪽 범위입니다.")]
+    public Collider2D backdashZoneCollider;
+    [Tooltip("3. 점프 공격(1, 2)을 사용하는 중간 범위입니다.")]
+    public Collider2D jumpAttackZoneCollider;
+    [Tooltip("4. 일반 공격(3, 4, 5)을 사용하는 근접 범위입니다.")]
     public Collider2D attackZoneCollider;
 
     [Header("기본 설정")]
     [Tooltip("스프라이트가 기본적으로 왼쪽을 보는지 설정합니다.")]
     public bool spriteFacesLeft = true;
+    [Tooltip("플레이어가 이 거리 안에 있으면 보스가 방향을 바꾸지 않습니다. (좌우 흔들림 방지)")]
+    [SerializeField] private float deadZone = 0.5f;
 
-    [Header("능력치")]
-    public float moveSpeed = 4f; // 광폭화 컨셉에 맞게 속도 상향
-    [Tooltip("다음 행동까지의 최소 대기 시간입니다.")]
-    public float actionCooldown = 0.5f;
-    [Tooltip("추적을 멈출 거리입니다. Attack_Zone 경계와 비슷하게 설정하는 것을 권장합니다.")]
-    [SerializeField] private float stoppingDistance = 3.0f;
+    [Header("지면 체크")]
+    [SerializeField] private Transform groundCheck;
+    [SerializeField] private LayerMask groundLayer;
+    [SerializeField] private float groundCheckRadius = 0.2f;
 
     [Header("대쉬 (이동용)")]
     [Tooltip("플레이어를 향한 전방 대쉬 속도입니다.")]
-    public float dashSpeed = 20f;
-    [Tooltip("전방 대쉬 지속 시간입니다.")]
-    public float dashDuration = 0.4f;
-    [Tooltip("백대쉬를 사용할 플레이어와의 최소 거리입니다.")]
-    public float backDashDistance = 2.0f;
-    [Tooltip("백대쉬 속도입니다.")]
-    public float backDashSpeed = 15f;
-    [Tooltip("백대쉬 지속 시간입니다.")]
-    public float backDashDuration = 0.2f;
-    [Tooltip("대쉬 (전방/후방) 이후 다음 대쉬까지의 쿨타임입니다.")]
-    public float dashCooldown = 3.0f;
-    private float lastDashTime = -10f; // 대쉬 쿨다운 계산용
+    public float dashSpeed = 25f;
+
+    [Header("백대쉬")]
+    [Tooltip("뒤로 물러나는 속도입니다.")]
+    public float backDashSpeed = 20f;
+    [Tooltip("뒤로 물러나는 시간입니다.")]
+    public float backDashDuration = 0.3f;
+    [Tooltip("백대쉬 이후 다음 백대쉬까지의 쿨타임입니다.")]
+    public float backDashCooldown = 4.0f;
 
     [Header("공격 패턴")]
+    [Tooltip("점프 공격 1 (낮은 점프)의 스탯입니다.")]
+    public JumpAttackStats jumpAttack1Stats = new JumpAttackStats { 
+        upForce = 50f, 
+        horizontalSpeed = 10f, 
+        downForce = 40f, 
+        ascentDuration = 0.25f,  // 3 frames @ 12fps
+        apexDelay = 0f,          // Attack1은 정점 대기 없음
+        descentDuration = 0.333f // 4 frames @ 12fps
+    };
+    [Tooltip("점프 공격 3 (높은 점프)의 스탯입니다.")]
+    public JumpAttackStats jumpAttack3Stats = new JumpAttackStats { 
+        upForce = 30f, 
+        horizontalSpeed = 15f, 
+        downForce = 35f, 
+        ascentDuration = 0.75f,  // 9 frames @ 12fps (3->12)
+        apexDelay = 0.417f,      // 5 frames @ 12fps (12->17)
+        descentDuration = 0.667f // 8 frames @ 12fps (17->25)
+    };
     [Tooltip("공격 애니메이션이 응답하지 않을 경우, 강제로 상태를 종료하기까지 대기하는 시간(초)입니다.")]
     public float attackForceFinishTime = 4.0f;
+    [Tooltip("다음 행동까지의 최소 대기 시간입니다.")]
+    public float actionCooldown = 1.5f;
     
+    [Header("2페이즈 체력 회복")]
+    [Tooltip("등장 후 서서히 회복할 체력량입니다.")]
+    public float healthToRecover = 40f;
+    [Tooltip("체력을 모두 회복하는 데 걸리는 시간입니다.")]
+    public float healthRecoverTime = 3.0f;
+
     [Header("사운드")]
-    public AudioClip attackSound;
     public AudioClip dieSound;
     public AudioClip bossBgm;
     [Tooltip("인스펙터에서 사운드 이름과 클립을 등록하세요.")]
@@ -81,61 +127,143 @@ public class S_BossController : MonoBehaviour
 
     // --- 내부 컴포넌트 및 상태 변수 ---
     private Rigidbody2D rb;
-    private SpriteRenderer spriteRenderer;
     private AudioSource audioSource;
     private Animator animator;
     private BossHealth bossHealth;
-    private CapsuleCollider2D capsuleCollider;
-    private Dictionary<int, string> attackIdToNameMap;
+    
     private Dictionary<string, AudioClip> soundDictionary;
+    private float originalGravityScale;
 
     private BossState currentState = BossState.Idle;
-    private float lastActionTime = 0f;
+    private float lastActionTime = -10f;
+    private float lastBackdashTime = -10f;
     private int lastAttackTriggerID = -1;
-    private Vector2 moveDirection = Vector2.zero;
+    private Vector2 moveDirection;
     private bool isDirectionLocked = false;
 
-    // --- Zone 감지 플래그 ---
+    // Zone 감지 플래그
     private bool isPlayerInTrackingZone = false;
-    private bool isPlayerInEngagementZone = false;
+    private bool isPlayerInBackdashZone = false;
+    private bool isPlayerInJumpAttackZone = false;
     private bool isPlayerInAttackZone = false;
+    private bool isGrounded = false;
 
-    // --- 애니메이터 파라미터 ID (성능 최적화) ---
-    private readonly int IsWalkingAnimID = Animator.StringToHash("isWalking");
+    // 공격 ID 목록
+    private List<int> jumpAttackTriggerIDs;
+    private List<int> regularAttackTriggerIDs;
+    private Dictionary<int, JumpAttackStats> jumpAttackStatsMap;
+
+    // 애니메이터 파라미터 ID
+    private readonly int IsDashingAnimID = Animator.StringToHash("isDashing");
+    private readonly int BackDashAnimID = Animator.StringToHash("BackDash");
     private readonly int StunAnimID = Animator.StringToHash("Stun");
-    private readonly int DieAnimID = Animator.StringToHash("Die");
-    private List<int> attackTriggerIDs;
+    private readonly int DieAnimID = Animator.StringToHash("die");
+
+    // --- MonoBehaviour 생명주기 ---
 
     void Awake()
     {
         // 컴포넌트 초기화
         rb = GetComponent<Rigidbody2D>();
-        spriteRenderer = GetComponent<SpriteRenderer>();
         audioSource = GetComponent<AudioSource>();
         animator = GetComponent<Animator>();
         bossHealth = GetComponent<BossHealth>();
-        capsuleCollider = GetComponent<CapsuleCollider2D>();
+        originalGravityScale = rb.gravityScale;
 
-        attackTriggerIDs = new List<int>();
-        attackIdToNameMap = new Dictionary<int, string>();
+        // 2페이즈 보스는 1페이즈와 달리 서서히 체력을 회복하지 않습니다.
+        if (bossHealth != null) bossHealth.enablePassiveRegen = false;
 
-        // 공격 패턴 등록 (1,2,3,4: 근접, 5: 근접/원거리)
-        // S_BossController에서는 모든 공격을 하나의 풀로 관리합니다.
-        int[] attackIDs = {
-            Animator.StringToHash("Attack1"),
-            Animator.StringToHash("Attack2"),
-            Animator.StringToHash("Attack3"),
-            Animator.StringToHash("Attack4"),
-            Animator.StringToHash("Attack5")
-        };
-        
-        for(int i = 0; i < attackIDs.Length; i++)
+        InitializeAttackPatterns();
+        InitializeSounds();
+    }
+
+    void Start()
+    {
+        ValidateReferences();
+    }
+
+    void Update()
+    {
+        // 행동 중(공격, 스턴, 백대쉬 등)이거나 사망 상태일 때는 아무것도 하지 않음
+        if (currentState == BossState.Attacking || currentState == BossState.Stunned || currentState == BossState.Dead || currentState == BossState.Backdashing)
         {
-            attackTriggerIDs.Add(attackIDs[i]);
-            attackIdToNameMap[attackIDs[i]] = $"Attack{i+1}";
+            return;
         }
 
-        // 사운드 딕셔너리 초기화
+        // 플레이어가 추적 범위 밖에 있다면, Idle 상태를 유지하고 모든 추적 행동을 중지합니다.
+        if (!isPlayerInTrackingZone)
+        {
+            if (currentState != BossState.Idle)
+            {
+                SetState(BossState.Idle);
+            }
+            return; // Idle 상태에서는 더 이상 진행하지 않음
+        }
+
+        // --- 이 아래는 플레이어가 추적 범위 안에 있는 경우입니다. ---
+
+        // 만약 Idle 상태였다면, 즉시 Dashing(추적) 상태로 전환합니다.
+        if (currentState == BossState.Idle)
+        {
+            SetState(BossState.Dashing);
+        }
+
+        // Dashing 상태에서는 항상 플레이어를 추적하고, 행동을 결정합니다.
+        if (currentState == BossState.Dashing)
+        {
+            DecideAndPerformAction(); // [수정] 이제 이 메서드가 추적과 공격 결정을 모두 담당합니다.
+        }
+    }
+
+    void FixedUpdate()
+    {
+        // 지면 체크
+        isGrounded = Physics2D.OverlapCircle(groundCheck.position, groundCheckRadius, groundLayer);
+
+        // [개선] T_BossController와 같이, switch 문을 사용하여 상태별 물리 처리를 명확하게 분리합니다.
+        switch (currentState)
+        {
+            case BossState.Dashing:
+                // 추적 상태에서는 계산된 방향으로 계속 이동합니다.
+                rb.linearVelocity = new Vector2(moveDirection.x * dashSpeed, rb.linearVelocity.y);
+                break;
+            
+            case BossState.Idle:
+            case BossState.Stunned:
+            case BossState.Dead:
+                // 정지해야 하는 상태들에서는 수평 속도를 0으로 고정합니다.
+                rb.linearVelocity = new Vector2(0, rb.linearVelocity.y);
+                break;
+
+            case BossState.Backdashing:
+                // 백대쉬는 코루틴에서 직접 속도를 제어하므로, 여기서는 아무것도 하지 않습니다.
+                // 이 case가 있기 때문에 Attacking 상태의 '움직임 정지' 로직이 백대쉬에 영향을 주지 않습니다.
+                break;
+
+            case BossState.Attacking:
+                // [새로운 접근] 이제 모든 공격은 각자의 코루틴에서 움직임을 직접 제어합니다.
+                // FixedUpdate에서는 Attacking 상태일 때 아무것도 하지 않습니다.
+                // 일반 공격은 RegularAttackRoutine에서 강제로 정지됩니다.
+                break;
+        }
+    }
+
+    // --- 초기화 ---
+
+    void InitializeAttackPatterns()
+    {
+        jumpAttackTriggerIDs = new List<int> { Animator.StringToHash("Attack1"), Animator.StringToHash("Attack3") };
+        regularAttackTriggerIDs = new List<int> { Animator.StringToHash("Attack2"), Animator.StringToHash("Attack4"), Animator.StringToHash("Attack5") };
+
+        jumpAttackStatsMap = new Dictionary<int, JumpAttackStats>
+        {
+            { jumpAttackTriggerIDs[0], jumpAttack1Stats },
+            { jumpAttackTriggerIDs[1], jumpAttack3Stats }
+        };
+    }
+
+    void InitializeSounds()
+    {
         soundDictionary = new Dictionary<string, AudioClip>();
         if (soundEffects != null)
         {
@@ -149,54 +277,23 @@ public class S_BossController : MonoBehaviour
         }
     }
 
-    void Start()
+    void ValidateReferences()
     {
-        // 참조 변수들이 제대로 할당되었는지 확인
         if (playerTransform == null)
         {
             var player = FindFirstObjectByType<F_PlayerController>();
             if (player != null) playerTransform = player.transform;
-            else Debug.LogError("<b>[S_BossController]</b> 플레이어 Transform을 찾을 수 없습니다! Inspector를 확인해주세요.", this);
+            else Debug.LogError("<b>[S_BossController]</b> 플레이어 Transform을 찾을 수 없습니다!", this);
         }
         if (bossHealthUI == null) Debug.LogError("<b>[S_BossController]</b> BossHealthUI가 할당되지 않았습니다! Inspector를 확인해주세요.", this);
-        if (engagementZoneCollider == null) Debug.LogError("<b>[S_BossController]</b> Engagement Zone Collider가 할당되지 않았습니다! Inspector를 확인해주세요.", this);
+        if (trackingZoneCollider == null) Debug.LogError("<b>[S_BossController]</b> Tracking Zone Collider가 할당되지 않았습니다!", this);
+        if (backdashZoneCollider == null) Debug.LogError("<b>[S_BossController]</b> Backdash Zone Collider가 할당되지 않았습니다!", this);
+        if (jumpAttackZoneCollider == null) Debug.LogError("<b>[S_BossController]</b> Jump Attack Zone Collider가 할당되지 않았습니다!", this);
         if (attackZoneCollider == null) Debug.LogError("<b>[S_BossController]</b> Attack Zone Collider가 할당되지 않았습니다! Inspector를 확인해주세요.", this);
+        if (groundCheck == null) Debug.LogError("<b>[S_BossController]</b> Ground Check Transform이 할당되지 않았습니다! Inspector를 확인해주세요.", this);
     }
 
-    void Update()
-    {
-        if (currentState == BossState.Dead || currentState == BossState.Stunned || currentState == BossState.Attacking || currentState == BossState.Dashing)
-        {
-            return;
-        }
-
-        switch (currentState)
-        {
-            case BossState.Idle:
-                if (isPlayerInTrackingZone)
-                {
-                    SetState(BossState.Chasing);
-                }
-                break;
-
-            case BossState.Chasing:
-                DecideNextAction();
-                break;
-        }
-    }
-
-    void FixedUpdate()
-    {
-        if (currentState == BossState.Chasing)
-        {
-            rb.linearVelocity = new Vector2(moveDirection.x * moveSpeed, rb.linearVelocity.y);
-        }
-        // Dashing 상태의 이동은 코루틴에서 직접 제어합니다.
-        else if (currentState != BossState.Dashing)
-        {
-            rb.linearVelocity = new Vector2(0, rb.linearVelocity.y);
-        }
-    }
+    // --- 상태 관리 ---
 
     void SetState(BossState newState)
     {
@@ -204,76 +301,107 @@ public class S_BossController : MonoBehaviour
 
         if (enableDebugLogs) Debug.Log($"<color=yellow>상태 변경: {currentState} -> {newState}</color>");
 
-        // --- 이전 상태 종료 로직 ---
+        // 이전 상태 종료 로직
         if (currentState == BossState.Attacking)
         {
-            isDirectionLocked = false; // 공격이 끝났으므로 방향 전환 잠금을 해제합니다.
+            isDirectionLocked = false;
+        }
+        else if (currentState == BossState.Dashing)
+        {
+            animator.SetBool(IsDashingAnimID, false);
+            moveDirection = Vector2.zero;
         }
 
-        // 상태 변경 직전, 이전 상태의 움직임 초기화
+        // [핵심 수정] 상태가 변경될 때, 이전 상태의 물리적 움직임을 즉시 멈춥니다.
+        // 이를 통해 '추적(Dashing)' 상태에서 '공격(Attacking)' 상태로 전환될 때
+        // 미끄러지듯 움직이면서 공격하는 문제를 해결합니다. (T_BossController 참조)
         rb.linearVelocity = Vector2.zero;
-        moveDirection = Vector2.zero;
-        animator.SetBool(IsWalkingAnimID, false);
 
         currentState = newState;
 
-        // --- 새로운 상태 진입 시 초기화 로직 ---
-        switch (currentState)
+        // 새로운 상태 진입 로직
+        if (currentState == BossState.Attacking)
         {
-            case BossState.Attacking:
-                FacePlayer();
-                isDirectionLocked = true; // 공격이 시작되면 방향을 고정합니다.
-                break;
-            case BossState.Chasing:
-                // 추적 상태로 돌아올 때마다 플레이어를 바라봅니다.
-                FacePlayer();
-                break;
+            FacePlayer();
+            isDirectionLocked = true;
+        }
+        else if (currentState == BossState.Dashing)
+        {
+            animator.SetBool(IsDashingAnimID, true);
         }
     }
 
-    void DecideNextAction()
+    // --- AI 행동 결정 ---
+
+    void DecideAndPerformAction()
     {
-        if (!isPlayerInTrackingZone)
-        {
-            SetState(BossState.Idle);
-            return;
-        }
-
         bool canPerformAction = Time.time >= lastActionTime + actionCooldown;
-        bool canDash = Time.time >= lastDashTime + dashCooldown;
-        float distanceToPlayerX = Mathf.Abs(playerTransform.position.x - transform.position.x);
+        bool canBackdash = Time.time >= lastBackdashTime + backDashCooldown;
 
-        // --- AI 행동 결정 로직 (우선순위 기반) ---
+        // --- 행동 결정 (Action Decision) ---
+        // 우선순위가 높은 행동을 먼저 시도하고, 행동을 수행했다면 함수를 종료합니다.
 
-        // 우선순위 1: 플레이어가 교전 범위(Engagement Zone) 밖에 있고, 대쉬가 가능하면 무조건 대쉬로 접근
-        if (!isPlayerInEngagementZone && canDash)
+        // 우선순위 1: 공격 (공통 쿨다운 적용)
+        if (canPerformAction)
         {
-            if (enableDebugLogs) Debug.Log("AI 결정: 플레이어가 멀리 있어 대쉬로 접근합니다.");
-            StartCoroutine(DashRoutine(true)); // true: 전방 대쉬
-            return;
-        }
-
-        // 우선순위 2: 플레이어가 공격 범위(Attack Zone) 안에 있고, 행동이 가능하면 공격 또는 백대쉬
-        if (isPlayerInAttackZone && canPerformAction)
-        {
-            // 2-1: 플레이어가 너무 가까우면(backDashDistance) 백대쉬 시도
-            if (distanceToPlayerX < backDashDistance && canDash)
+            // 중복 공격 방지
+            if (animator.GetCurrentAnimatorStateInfo(0).IsTag("Attack"))
             {
-                if (enableDebugLogs) Debug.Log("AI 결정: 플레이어가 너무 가까워 백대쉬로 거리를 둡니다.");
-                StartCoroutine(DashRoutine(false)); // false: 후방 대쉬
-                return;
+                // 애니메이션이 아직 끝나지 않았으면 추적만 계속합니다.
             }
-            // 2-2: 공격
-            else
+            // 일반 공격
+            else if (isPlayerInAttackZone)
             {
-                if (enableDebugLogs) Debug.Log("AI 결정: 근접 공격 실행");
-                PerformAttack();
-                return;
+                if (enableDebugLogs) Debug.Log("AI 결정: 어택 존에서 일반 공격 실행");
+                PerformRegularAttack();
+                return; // 행동을 했으므로 종료
+            }
+            // 점프 공격
+            else if (isPlayerInJumpAttackZone)
+            {
+                if (enableDebugLogs) Debug.Log("AI 결정: 점프 어택 존에서 점프 공격 실행");
+                PerformJumpAttack();
+                return; // 행동을 했으므로 종료
             }
         }
 
-        // 우선순위 3: 아무 행동도 하지 않을 경우, 플레이어를 향해 이동
+        // 우선순위 2: 백대쉬
+        // 공격을 수행하지 않았을 때만 백대쉬를 고려합니다.
+        if (isPlayerInBackdashZone && canBackdash)
+        {
+            if (enableDebugLogs) Debug.Log("AI 결정: 플레이어가 너무 가까워 백대쉬");
+            StartCoroutine(BackdashRoutine());
+            return; // 행동을 했으므로 종료
+        }
+
+        // --- 이동 결정 (Movement Decision) ---
+        // 위의 행동들을 수행하지 않았을 경우 (쿨타임 중이거나, 범위 밖일 때) 플레이어를 추적합니다.
         HandleMovementAndFacing();
+    }
+
+    // --- 행동 실행 ---
+
+    void PerformRegularAttack()
+    {
+        int randomIndex = Random.Range(0, regularAttackTriggerIDs.Count);
+        int chosenAttackTrigger = regularAttackTriggerIDs[randomIndex];
+        StartCoroutine(RegularAttackRoutine(chosenAttackTrigger));
+    }
+
+    void PerformJumpAttack()
+    {
+        // [핵심 수정] 점프 공격 시에도, 시작하기 전에 기존의 추적 움직임을 완전히 멈춥니다.
+        moveDirection = Vector2.zero;
+        rb.linearVelocity = new Vector2(0, rb.linearVelocity.y);
+
+        SetState(BossState.Attacking);
+
+        int randomIndex = Random.Range(0, jumpAttackTriggerIDs.Count);
+        int chosenAttackTrigger = jumpAttackTriggerIDs[randomIndex];
+        lastAttackTriggerID = chosenAttackTrigger;
+
+        JumpAttackStats stats = jumpAttackStatsMap[chosenAttackTrigger];
+        StartCoroutine(JumpAttackRoutine(chosenAttackTrigger, stats));
     }
 
     void HandleMovementAndFacing()
@@ -282,184 +410,166 @@ public class S_BossController : MonoBehaviour
 
         float distanceToPlayerX = Mathf.Abs(playerTransform.position.x - transform.position.x);
 
-        // 플레이어와의 거리가 멈춤 거리(stoppingDistance)보다 멀면 추적합니다.
-        if (distanceToPlayerX > stoppingDistance)
-        {
-            moveDirection.x = Mathf.Sign(playerTransform.position.x - transform.position.x);
-            animator.SetBool(IsWalkingAnimID, true);
-        }
-        else // 거리가 충분히 가까우면 멈춤
-        {
-            moveDirection.x = 0;
-            animator.SetBool(IsWalkingAnimID, false);
-        }
+        // Dashing 상태에서 플레이어를 향해 이동 방향 설정
+        moveDirection.x = Mathf.Sign(playerTransform.position.x - transform.position.x);
 
-        FacePlayer();
+        // 데드존 밖에 있을 때만 방향을 바꿉니다.
+        if (distanceToPlayerX > deadZone)
+        {
+            FacePlayer();
+        }
     }
 
     void FacePlayer()
     {
         if (playerTransform == null || isDirectionLocked) return;
 
-        if (animator != null && animator.GetCurrentAnimatorStateInfo(0).IsTag("Attack"))
+        // [핵심 수정] T_BossController와 같이, 애니메이터가 "Attack" 태그를 가진 상태를 재생 중일 때는
+        // 방향 전환을 하지 않도록 하여 안정성을 높입니다.
+        if (animator.GetCurrentAnimatorStateInfo(0).IsTag("Attack"))
         {
             return;
         }
 
         bool isPlayerRight = (playerTransform.position.x - transform.position.x) > 0;
-        ApplyScale(isPlayerRight);
-    }
-
-    void ApplyScale(bool lookRight)
-    {
-        // [수정] 보스 오브젝트의 기본 스케일 크기(1 이상)를 유지하면서 방향만 바꾸도록 로직을 수정합니다.
-        // 이전 로직은 스케일 값을 1 또는 -1로 강제하여, 크기가 조절된 보스에게 예기치 않은 문제를 일으킬 수 있었습니다.
-
-        // 목표로 해야 할 스케일의 부호 결정 (+1 또는 -1)
-        float targetSign;
-        if (spriteFacesLeft)
-        {
-            // 기본 스프라이트가 왼쪽을 향할 때: 오른쪽을 보려면 부호가 -1이어야 함
-            targetSign = lookRight ? -1f : 1f;
-        }
-        else
-        {
-            // 기본 스프라이트가 오른쪽을 향할 때: 왼쪽을 보려면 부호가 -1이어야 함
-            targetSign = lookRight ? 1f : -1f;
-        }
-
-        // 현재 스케일의 부호와 목표 부호가 다를 경우에만 스케일을 반전시킵니다.
+        float targetSign = spriteFacesLeft ? (isPlayerRight ? -1f : 1f) : (isPlayerRight ? 1f : -1f);
+        
         if (Mathf.Sign(transform.localScale.x) != targetSign)
         {
             transform.localScale = new Vector3(-transform.localScale.x, transform.localScale.y, transform.localScale.z);
         }
     }
 
-    void PerformAttack()
-    {
-        if (attackTriggerIDs == null || attackTriggerIDs.Count == 0)
-        {
-            Debug.LogError("실행할 공격이 없습니다! Animator Trigger를 확인하세요.");
-            SetState(BossState.Chasing);
-            return;
-        }
-        SetState(BossState.Attacking);
-        int randomIndex = Random.Range(0, attackTriggerIDs.Count);
-        int chosenAttackTrigger = attackTriggerIDs[randomIndex];
-        lastAttackTriggerID = chosenAttackTrigger;
-        animator.SetTrigger(lastAttackTriggerID);
-
-        StartCoroutine(ForceFinishAttackRoutine(attackForceFinishTime));
-    }
-
-    // --- 외부 호출 함수 (데미지, 사망, 스턴 등) ---
-    
-    public void TakeDamage(int damage)
-    {
-        if (currentState == BossState.Dead) return;
-        bossHealth.TakeDamage(damage);
-    }
-
-    public void Die()
-    {
-        StopAllCoroutines();
-        SetState(BossState.Dead);
-        DisableAllAttackHitboxes();
-        if (audioSource != null) audioSource.Stop();
-        rb.bodyType = RigidbodyType2D.Kinematic;
-        if (capsuleCollider != null) capsuleCollider.enabled = false;
-        animator.SetTrigger(DieAnimID);
-        PlaySound(dieSound);
-        StartCoroutine(DelayedDestroyRoutine(2.0f));
-    }
-
-    public void GetStunned()
-    {
-        if (currentState == BossState.Dead) return;
-        StopAllCoroutines();
-        StartCoroutine(StunRoutine());
-    }
-
-    // --- 애니메이션 이벤트 함수 ---
-
-    public void AnimationEvent_AttackFinished()
-    {
-        if (currentState == BossState.Dead) return;
-        StopCoroutine("ForceFinishAttackRoutine");
-        lastAttackTriggerID = -1;
-        lastActionTime = Time.time;
-        SetState(BossState.Chasing);
-    }
-
-    public void PlaySoundEffect(string soundName)
-    {
-        if (soundDictionary != null && soundDictionary.TryGetValue(soundName, out AudioClip clip))
-        {
-            if (clip != null) audioSource.PlayOneShot(clip);
-        }
-        else
-        {
-            Debug.LogError($"[S_BossController] 사운드 '{soundName}'를 찾을 수 없습니다.");
-        }
-    }
-
     // --- 코루틴 ---
 
-    private IEnumerator DashRoutine(bool isForwardDash)
+    private IEnumerator BackdashRoutine()
     {
-        SetState(BossState.Dashing);
-        lastDashTime = Time.time; // 쿨다운 타이머 시작
-        lastActionTime = Time.time; // 다른 행동 쿨다운도 같이 돌림
+        // 1. 백대쉬 시작: 상태 변경 및 쿨다운 타이머 시작
+        SetState(BossState.Backdashing);
+        lastBackdashTime = Time.time;
 
-        float moveDirection;
-        float speed;
-        float duration;
+        // 2. 방향 결정 및 애니메이션 실행
+        FacePlayer(); // 플레이어를 바라본 후 뒤로 이동
+        animator.SetTrigger(BackDashAnimID);
 
-        if (isForwardDash)
-        {
-            // 전방 대쉬: 플레이어를 향해
-            moveDirection = Mathf.Sign(playerTransform.position.x - transform.position.x);
-            speed = dashSpeed;
-            duration = dashDuration;
-            // TODO: 전방 대쉬 애니메이션 트리거
-            // animator.SetTrigger("ForwardDash");
-        }
-        else
-        {
-            // 후방 대쉬: 플레이어의 반대 방향으로
-            moveDirection = -Mathf.Sign(playerTransform.position.x - transform.position.x);
-            speed = backDashSpeed;
-            duration = backDashDuration;
-            // TODO: 후방 대쉬 애니메이션 트리거
-            // animator.SetTrigger("BackDash");
-        }
+        // 3. 물리적 이동
+        float moveDirection = -Mathf.Sign(playerTransform.position.x - transform.position.x);
+        rb.linearVelocity = new Vector2(moveDirection * backDashSpeed, 0);
         
-        // [수정] 방향 전환: 대쉬 종류와 관계없이 항상 플레이어를 바라보도록 수정합니다.
-        bool playerIsOnTheRight = (playerTransform.position.x - transform.position.x) > 0;
-        ApplyScale(playerIsOnTheRight);
+        // 4. 지정된 시간만큼 뒤로 이동
+        yield return new WaitForSeconds(backDashDuration);
 
-        // 대쉬 시작
-        rb.linearVelocity = new Vector2(moveDirection * speed, 0);
-        
-        yield return new WaitForSeconds(duration);
-
-        // 대쉬 종료
+        // 5. 이동 정지 및 1초간 행동 정지
         rb.linearVelocity = Vector2.zero;
-        
-        // 스턴 등으로 상태가 바뀌지 않았다면 추적 상태로 전환
-        if (currentState == BossState.Dashing)
+        yield return new WaitForSeconds(1.0f);
+
+        // 6. 상태 복귀
+        // 상태가 강제로 바뀌지 않았다면 (예: 스턴) 추적 상태로 복귀
+        if (currentState == BossState.Backdashing)
         {
-            SetState(BossState.Chasing);
+            SetState(isPlayerInTrackingZone ? BossState.Dashing : BossState.Idle);
         }
     }
 
-    private IEnumerator DelayedDestroyRoutine(float delay)
+    private IEnumerator HealOverTime(float amount, float duration)
     {
-        yield return new WaitForSeconds(delay);
-        #if UNITY_EDITOR
-        UnityEditor.Selection.activeObject = null;
-        #endif
-        Destroy(gameObject);
+        if (bossHealth == null || duration <= 0) yield break;
+
+        float timer = 0f;
+        float healPerSecond = amount / duration;
+
+        if (enableDebugLogs) Debug.Log($"체력 회복 시작: {amount}만큼 {duration}초에 걸쳐 회복합니다.");
+
+        while (timer < duration)
+        {
+            // 스턴이나 사망 상태가 되면 회복을 중단합니다.
+            if (currentState == BossState.Stunned || currentState == BossState.Dead)
+            {
+                if (enableDebugLogs) Debug.Log("상태 이상으로 체력 회복 중단.");
+                yield break;
+            }
+            bossHealth.Heal(healPerSecond * Time.deltaTime);
+            timer += Time.deltaTime;
+            yield return null;
+        }
+        if (enableDebugLogs) Debug.Log("체력 회복 완료.");
+    }
+
+    private IEnumerator RegularAttackRoutine(int attackTriggerID)
+    {
+        // 1. 공격 시작: 상태 변경 및 모든 움직임 즉시 정지
+        SetState(BossState.Attacking);
+        moveDirection = Vector2.zero;
+        rb.linearVelocity = Vector2.zero;
+
+        // 2. 애니메이션 실행
+        lastAttackTriggerID = attackTriggerID;
+        animator.SetTrigger(attackTriggerID);
+
+        // 3. 애니메이션이 "Attack" 상태로 완전히 전환될 때까지 대기
+        // 이를 통해 상태 전환 직후의 프레임에서 발생하는 문제를 방지합니다.
+        yield return null; // 한 프레임 대기하여 애니메이터가 상태를 업데이트할 시간을 줍니다.
+        yield return new WaitUntil(() => animator.GetCurrentAnimatorStateInfo(0).IsTag("Attack"));
+
+        // 4. 애니메이션이 끝날 때까지 (즉, "Attack" 태그를 가진 상태가 아닐 때까지) 대기
+        // 이 루프 동안에는 다른 로직이 끼어들 수 없으므로, 보스는 제자리에 고정됩니다.
+        while (animator.GetCurrentAnimatorStateInfo(0).IsTag("Attack"))
+        {
+            // 만약을 위해 매 프레임 속도를 0으로 고정하여 다른 외부 요인에 의한 움직임을 완벽하게 차단합니다.
+            rb.linearVelocity = new Vector2(0, rb.linearVelocity.y);
+            yield return null;
+        }
+
+        // 5. 공격 종료 처리
+        // 루프가 끝났다는 것은 애니메이션이 종료되었음을 의미합니다.
+        // 스턴/사망 등으로 상태가 강제로 바뀌지 않았다면, 공격 종료 처리를 실행합니다.
+        if (currentState == BossState.Attacking)
+        {
+            AnimationEvent_AttackFinished();
+        }
+    }
+
+    private IEnumerator JumpAttackRoutine(int attackTriggerID, JumpAttackStats stats)
+    {
+        StartCoroutine(ForceFinishAttackRoutine(attackForceFinishTime));
+        isDirectionLocked = true;
+
+        // 1. 점프 준비
+        FacePlayer();
+        float horizontalDirection = Mathf.Sign(playerTransform.position.x - transform.position.x);
+        
+        yield return new WaitUntil(() => isGrounded);
+
+        // 2. 상승 (지정된 시간 동안)
+        rb.gravityScale = 0f;
+        rb.linearVelocity = new Vector2(horizontalDirection * stats.horizontalSpeed, stats.upForce);
+        animator.SetTrigger(attackTriggerID);
+
+        yield return new WaitForSeconds(stats.ascentDuration);
+
+        // 3. 정점 대기 (Apex Hold) - apexDelay가 0보다 클 때만 실행
+        if (stats.apexDelay > 0)
+        {
+            rb.linearVelocity = Vector2.zero;
+            yield return new WaitForSeconds(stats.apexDelay);
+        }
+
+        // 4. 하강 (지정된 시간 동안)
+        // 정점에서 플레이어 방향으로 다시 조준합니다.
+        float descentDirection = Mathf.Sign(playerTransform.position.x - transform.position.x);
+        rb.linearVelocity = new Vector2(descentDirection * stats.horizontalSpeed, -stats.downForce);
+
+        yield return new WaitForSeconds(stats.descentDuration);
+
+        // 5. 착지 처리
+        rb.gravityScale = originalGravityScale;
+        rb.linearVelocity = Vector2.zero;
+
+        if (!isGrounded)
+        {
+            Debug.LogWarning("점프 공격: 지정된 시간 후에도 착지하지 못했습니다. 지면과의 거리를 확인하세요.");
+        }
+        // 공격 종료는 AnimationEvent_AttackFinished 또는 ForceFinishAttackRoutine이 처리
     }
 
     private IEnumerator ForceFinishAttackRoutine(float limitTime)
@@ -467,12 +577,7 @@ public class S_BossController : MonoBehaviour
         yield return new WaitForSeconds(limitTime);
         if (currentState == BossState.Attacking)
         {
-            string attackName = "알 수 없는 공격";
-            if (attackIdToNameMap.TryGetValue(lastAttackTriggerID, out string foundName))
-            {
-                attackName = foundName;
-            }
-            Debug.LogWarning($"공격 상태 강제 종료! '{attackName}' 애니메이션에 AnimationEvent_AttackFinished() 이벤트가 누락되었을 수 있습니다.");
+            Debug.LogWarning($"공격 상태 강제 종료! 애니메이션 이벤트가 누락되었을 수 있습니다.");
             AnimationEvent_AttackFinished();
         }
     }
@@ -484,38 +589,122 @@ public class S_BossController : MonoBehaviour
         yield return new WaitForSeconds(1.5f);
         if (currentState == BossState.Stunned)
         {
-            SetState(BossState.Chasing);
+            SetState(isPlayerInTrackingZone ? BossState.Dashing : BossState.Idle);
         }
     }
+    
+    private IEnumerator DelayedDestroyRoutine(float delay)
+    {
+        yield return new WaitForSeconds(delay);
+        Destroy(gameObject);
+    }
 
-    // --- Zone 트리거 감지 함수 ---
-    // BossZoneTrigger 스크립트에서 이 함수들을 호출하도록 설정해야 합니다.
-    public void OnPlayerEnterTrackingZone() 
-    { 
-        isPlayerInTrackingZone = true; 
-        if (enableDebugLogs) Debug.Log("플레이어 진입: TrackingZone"); 
-        if (bossHealthUI != null) bossHealthUI.Show();
+    // --- 외부 호출 및 이벤트 ---
+    
+    public void TakeDamage(int damage)
+    {
+        // 체력 회복 중에는 데미지를 받으면 회복을 중단합니다.
+        StopCoroutine("HealOverTime");
 
-        if (audioSource != null && bossBgm != null && (audioSource.clip != bossBgm || !audioSource.isPlaying))
+        if (currentState == BossState.Dead) return;
+        bossHealth.TakeDamage(damage);
+    }
+
+    /// <summary>
+    /// 1페이즈 보스가 호출하여 2페이즈를 시작시킵니다.
+    /// 체력을 10으로 설정하고, UI를 표시한 뒤, 서서히 체력을 회복합니다.
+    /// </summary>
+    public void ActivateAndStartHealthRecovery()
+    {
+        if (bossHealth != null)
         {
-            audioSource.clip = bossBgm;
-            audioSource.loop = true;
-            audioSource.Play();
+            bossHealth.SetInitialHealth(10);
+        }
+        if (bossHealthUI != null)
+        {
+            bossHealthUI.Show();
+        }
+        StartCoroutine(HealOverTime(healthToRecover, healthRecoverTime));
+    }
+
+    public void Die()
+    {
+        StopAllCoroutines();
+        SetState(BossState.Dead);
+        DisableAllAttackHitboxes();
+        if (audioSource != null) audioSource.Stop();
+        rb.bodyType = RigidbodyType2D.Kinematic;
+        GetComponent<Collider2D>().enabled = false;
+        animator.SetTrigger(DieAnimID);
+        PlaySound(dieSound);
+        StartCoroutine(DelayedDestroyRoutine(6.0f));
+    }
+
+    public void GetStunned()
+    {
+        if (currentState == BossState.Dead || currentState == BossState.Stunned) return;
+        StopAllCoroutines();
+        StartCoroutine(StunRoutine());
+    }
+
+    public void AnimationEvent_AttackFinished()
+    {
+        if (currentState == BossState.Dead) return;
+        StopCoroutine("ForceFinishAttackRoutine");
+        lastAttackTriggerID = -1;
+        lastActionTime = Time.time; // [핵심 수정] 공격이 '끝난' 시점에 쿨타임 타이머를 시작합니다.
+        SetState(isPlayerInTrackingZone ? BossState.Dashing : BossState.Idle);
+    }
+
+    public void PlaySoundEffect(string soundName)
+    {
+        if (soundDictionary.TryGetValue(soundName, out AudioClip clip))
+        {
+            PlaySound(clip);
         }
     }
-    public void OnPlayerExitTrackingZone() 
-    { 
-        isPlayerInTrackingZone = false; 
-        isPlayerInEngagementZone = false;
-        isPlayerInAttackZone = false; 
-        SetState(BossState.Idle);
-        if (enableDebugLogs) Debug.Log("플레이어 이탈: TrackingZone");
-        if (audioSource != null && audioSource.clip == bossBgm) audioSource.Stop();
+
+    // --- Zone 트리거 감지 ---
+    // BossZoneTrigger 스크립트에서 호출
+    public void OnPlayerEnterZone(string zoneType)
+    {
+        if (enableDebugLogs) Debug.Log($"플레이어 진입: {zoneType}");
+        switch (zoneType)
+        {
+            case "Tracking":
+                isPlayerInTrackingZone = true;
+                bossHealthUI?.Show();
+                if (audioSource != null && bossBgm != null && !audioSource.isPlaying)
+                {
+                    audioSource.clip = bossBgm;
+                    audioSource.loop = true;
+                    audioSource.Play();
+                }
+                break;
+            case "Backdash": isPlayerInBackdashZone = true; break;
+            case "JumpAttack": isPlayerInJumpAttackZone = true; break;
+            case "Attack": isPlayerInAttackZone = true; break;
+        }
     }
-    public void OnPlayerEnterEngagementZone() { isPlayerInEngagementZone = true; if (enableDebugLogs) Debug.Log("플레이어 진입: EngagementZone"); }
-    public void OnPlayerExitEngagementZone() { isPlayerInEngagementZone = false; if (enableDebugLogs) Debug.Log("플레이어 이탈: EngagementZone"); }
-    public void OnPlayerEnterAttackZone() { isPlayerInAttackZone = true; if (enableDebugLogs) Debug.Log("플레이어 진입: AttackZone"); }
-    public void OnPlayerExitAttackZone() { isPlayerInAttackZone = false; if (enableDebugLogs) Debug.Log("플레이어 이탈: AttackZone"); }
+
+    public void OnPlayerExitZone(string zoneType)
+    {
+        if (enableDebugLogs) Debug.Log($"플레이어 이탈: {zoneType}");
+        switch (zoneType)
+        {
+            case "Tracking":
+                isPlayerInTrackingZone = false;
+                isPlayerInBackdashZone = false;
+                isPlayerInJumpAttackZone = false;
+                isPlayerInAttackZone = false;
+                SetState(BossState.Idle);
+                if (audioSource != null && audioSource.clip == bossBgm) audioSource.Stop();
+                break;
+            case "Backdash": isPlayerInBackdashZone = false; break;
+            case "JumpAttack": isPlayerInJumpAttackZone = false; break;
+            case "Attack": isPlayerInAttackZone = false; break;
+        }
+    }
 
     // --- 유틸리티 ---
     private void PlaySound(AudioClip clip)
@@ -528,19 +717,10 @@ public class S_BossController : MonoBehaviour
 
     private void DisableAllAttackHitboxes()
     {
-        S_BossHitbox[] hitboxes = GetComponentsInChildren<S_BossHitbox>();
+        S_BossHitbox[] hitboxes = GetComponentsInChildren<S_BossHitbox>(true);
         foreach (var hitbox in hitboxes)
         {
-            if (hitbox.gameObject != gameObject)
-            {
-                hitbox.gameObject.SetActive(false);
-            }
-            else
-            {
-                hitbox.enabled = false;
-                Collider2D col = hitbox.GetComponent<Collider2D>();
-                if (col != null) col.enabled = false;
-            }
+            hitbox.gameObject.SetActive(false);
         }
     }
 }

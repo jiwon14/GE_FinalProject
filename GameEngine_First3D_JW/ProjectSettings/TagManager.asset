@@ -12,6 +12,7 @@ TagManager:
   - BossAttack
   - Detection
   - Wall
+  - Attack
   layers:
   - Default
   - TransparentFX

@@ -7,10 +7,13 @@ public class BossHealth : MonoBehaviour
     [SerializeField] private float maxHealth = 1000f;
     private float currentHealth;
     private bool hasDiedOnce = false; // 2페이즈 전환을 위해, 한 번 죽었는지 확인
+    [Tooltip("활성화하면 보스가 서서히 체력을 회복합니다. (1페이즈 보스용)")]
+    public bool enablePassiveRegen = true;
     private bool isDead = false; // 보스가 죽었는지 확인하는 플래그
 
     private F_BossController f_bossController;
     private T_BossController t_bossController;
+    private S_BossController s_bossController;
 
     // 체력이 변경될 때 호출될 이벤트
     // 파라미터: 현재 체력, 최대 체력
@@ -20,11 +23,14 @@ public class BossHealth : MonoBehaviour
     {
         f_bossController = GetComponent<F_BossController>();
         t_bossController = GetComponent<T_BossController>();
+        s_bossController = GetComponent<S_BossController>();
         currentHealth = maxHealth;
     }
 
     void Update()
     {
+        if (!enablePassiveRegen) return;
+
         // 보스가 살아있고(isDead == false), 체력이 최대치가 아닐 때만 재생
         if (!isDead && currentHealth > 0 && currentHealth < maxHealth)
         {
@@ -70,10 +76,24 @@ public class BossHealth : MonoBehaviour
                 t_bossController.StartPhase2Transition(); // 2페이즈 전환 시작
             }
         }
+        else if (s_bossController != null)
+        {
+            s_bossController.Die();
+        }
         else if (f_bossController != null) // T_Boss가 아닐 경우 기존 로직
         {
             f_bossController.Die();
         }
+    }
+
+    /// <summary>
+    /// 보스의 체력을 지정된 값으로 즉시 설정합니다. (2페이즈 등장 시 사용)
+    /// </summary>
+    /// <param name="health">설정할 체력 값</param>
+    public void SetInitialHealth(float health)
+    {
+        currentHealth = Mathf.Clamp(health, 0, maxHealth);
+        OnHealthChanged?.Invoke(currentHealth, maxHealth);
     }
 
     /// <summary>

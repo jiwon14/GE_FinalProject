@@ -4,8 +4,8 @@ using UnityEngine;
 public class S_BossZoneTrigger : MonoBehaviour
 {
     // S_BossController가 사용하는 Zone 타입들을 정의합니다.
-    public enum ZoneType { Tracking, Engagement, Attack }
-    [Tooltip("이 Zone의 역할을 선택하세요: Tracking(전체 인식), Engagement(대쉬 결정), Attack(공격 결정)")]
+    public enum ZoneType { Tracking, Backdash, JumpAttack, Attack }
+    [Tooltip("이 Zone의 역할을 선택하세요: Tracking(추적), Backdash(백대쉬), JumpAttack(점프공격), Attack(일반공격)")]
     public ZoneType zoneType;
 
     private S_BossController bossController;
@@ -31,12 +31,7 @@ public class S_BossZoneTrigger : MonoBehaviour
 
         if (other.CompareTag("Player") && bossController != null)
         {
-            switch (zoneType)
-            {
-                case ZoneType.Tracking: bossController.OnPlayerEnterTrackingZone(); break;
-                case ZoneType.Engagement: bossController.OnPlayerEnterEngagementZone(); break;
-                case ZoneType.Attack: bossController.OnPlayerEnterAttackZone(); break;
-            }
+            bossController.OnPlayerEnterZone(zoneType.ToString());
         }
     }
 
@@ -50,12 +45,7 @@ public class S_BossZoneTrigger : MonoBehaviour
 
         if (other.CompareTag("Player") && bossController != null)
         {
-            switch (zoneType)
-            {
-                case ZoneType.Tracking: bossController.OnPlayerExitTrackingZone(); break;
-                case ZoneType.Engagement: bossController.OnPlayerExitEngagementZone(); break;
-                case ZoneType.Attack: bossController.OnPlayerExitAttackZone(); break;
-            }
+            bossController.OnPlayerExitZone(zoneType.ToString());
         }
     }
 }

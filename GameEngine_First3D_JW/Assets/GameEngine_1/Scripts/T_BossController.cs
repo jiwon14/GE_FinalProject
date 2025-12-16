@@ -573,9 +573,6 @@ public class T_BossController : MonoBehaviour
         rb.simulated = false; // 모든 물리 효과 정지
         if (capsuleCollider != null) capsuleCollider.enabled = false;
 
-        // 추가: 보스 체력바가 확실히 보이도록 합니다.
-        if (bossHealthUI != null) bossHealthUI.Show();
-
         // TODO: 1페이즈 사망 애니메이션이 있다면 여기서 재생
         // yield return new WaitForSeconds(deathAnimationTime);
 
@@ -589,12 +586,13 @@ public class T_BossController : MonoBehaviour
         // 4. 필살기 연출
         if (enableDebugLogs) Debug.Log("2페이즈 전환 필살기 시퀀스 시작...");
         
-        // 6초간 침묵
-        yield return new WaitForSeconds(6.0f);
+        // 암전 대기 (총 4.5초, 이전보다 0.5초 단축)
+        yield return new WaitForSeconds(3.5f);
 
-        // 준비 사운드
+        // 준비 사운드 (이전보다 0.25초 더 빠르게 재생)
         PlaySound(ultimateChargeSound);
-        yield return new WaitForSeconds(1.0f);
+        // 참격 시작까지 대기
+        yield return new WaitForSeconds(1.15f);
 
         // 필살기 시퀀스 (검기 5개 순차 재생)
         if (ultimateSlashEffects != null)
@@ -645,6 +643,16 @@ public class T_BossController : MonoBehaviour
 
         if (enableDebugLogs) Debug.Log("2페이즈 보스 활성화!");
         phase2BossObject.SetActive(true);
+
+        // 2페이즈 보스의 체력 초기화 및 회복 로직을 시작시킵니다.
+        S_BossController phase2Boss = phase2BossObject.GetComponent<S_BossController>();
+        if (phase2Boss != null)
+        {
+            // 2페이즈 보스의 체력바가 켜지기 직전에 1페이즈의 체력바를 숨깁니다.
+            if (bossHealthUI != null) bossHealthUI.Hide();
+
+            phase2Boss.ActivateAndStartHealthRecovery();
+        }
 
         // 6. 화면 밝아짐
         yield return StartCoroutine(FadeScreen(0f, 1.5f));
