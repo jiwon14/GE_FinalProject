@@ -1566,7 +1566,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 3c112038db410f74db6e05c9c26eb06d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  bgmClip: {fileID: 8300000, guid: 2c6150b59d9932842906d7af633ca9f6, type: 3}
+  bgmClip: {fileID: 8300000, guid: 7c5856e6bee5d8642a68118cd9e7dc08, type: 3}
   volume: 0.5
   isLoop: 1
   loopStartTime: 0

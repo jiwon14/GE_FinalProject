@@ -5064,7 +5064,7 @@ MonoBehaviour:
   parryWindow: 0.25
   parryCooldown: 1
   parrySuccessSound: {fileID: 8300000, guid: 2cdda754db412c44eadb2d9174771ef4, type: 3}
-  deathSound: {fileID: 0}
+  deathSound: {fileID: 8300000, guid: a3277311ff7ac6940b100452d595790c, type: 3}
   knockbackForce: 5
   knockbackDuration: 0.3
   deathSceneName: PlayerDied

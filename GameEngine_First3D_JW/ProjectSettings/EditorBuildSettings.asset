@@ -6,6 +6,9 @@ EditorBuildSettings:
   serializedVersion: 2
   m_Scenes:
   - enabled: 1
+    path: Assets/GameEngine_1/Scenes/GameStart.unity
+    guid: 6099933d4a1dcc642896ca980a16efbc
+  - enabled: 1
     path: Assets/GameEngine_1/Scenes/Intro.unity
     guid: bc10f6dc0222ba64ca239f1e8861f413
   - enabled: 1
@@ -25,7 +28,7 @@ EditorBuildSettings:
     guid: 2b0ef4523f5593d448c8eeccafbaa4cc
   - enabled: 1
     path: Assets/GameEngine_1/Scenes/Scene6.unity
-    guid: bbd3a32651a548f43986bbbc566137be
+    guid: c19a1599f0075184186ddaa31a4cf782
   - enabled: 1
     path: Assets/GameEngine_1/Scenes/Scene7_TBoss.unity
     guid: 9d494fbea8050b14eb66c783f611c2eb

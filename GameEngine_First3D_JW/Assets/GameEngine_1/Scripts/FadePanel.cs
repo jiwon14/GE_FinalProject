@@ -33,4 +33,23 @@ public class SceneFader : MonoBehaviour
         // 확실하게 투명하게 만들고 오브젝트 끄기 (성능 최적화)
         fadePanel.gameObject.SetActive(false); 
     }
+
+    public IEnumerator FadeOut()
+    {
+        fadePanel.gameObject.SetActive(true); // 패널 활성화
+        float currentTime = 0f;
+        Color panelColor = fadePanel.color;
+
+        while (currentTime < fadeTime)
+        {
+            currentTime += Time.deltaTime;
+            // 알파값(투명도)을 0(투명)에서 1(불투명)으로 서서히 변경
+            float alpha = Mathf.Lerp(0f, 1f, currentTime / fadeTime);
+            
+            panelColor.a = alpha;
+            fadePanel.color = panelColor;
+
+            yield return null; // 한 프레임 대기
+        }
+    }
 }
