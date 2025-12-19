@@ -1163,7 +1163,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!95 &476264580
 Animator:
   serializedVersion: 7
@@ -1498,7 +1498,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 3c8e01f69ffa50247822c1c32c941751, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  maxHealth: 90
   enablePassiveRegen: 1
 --- !u!1 &536795815
 GameObject:
@@ -4281,7 +4280,6 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
 --- !u!95 &1322288993
 Animator:
   serializedVersion: 7
@@ -4603,9 +4601,19 @@ MonoBehaviour:
   bossBgm: {fileID: 8300000, guid: 9fa6c5375e8b85445905af4696c7204a, type: 3}
   soundEffects:
   - name: p2Attack1
+    clip: {fileID: 8300000, guid: 953e066a61367c0488bca3d7840d8b6c, type: 3}
+  - name: p2Attack2
+    clip: {fileID: 8300000, guid: 8cb090501fc40d84587be35f2f72a1a9, type: 3}
+  - name: p2Attack3
+    clip: {fileID: 8300000, guid: 6299c6c0bb0114f4ab2bc1c46aee52b4, type: 3}
+  - name: p2Attack4
+    clip: {fileID: 8300000, guid: f656109deb806d2498acf46c8e2b0495, type: 3}
+  - name: p2Attack5
+    clip: {fileID: 8300000, guid: 953e066a61367c0488bca3d7840d8b6c, type: 3}
+  - name: p2BackStep
+    clip: {fileID: 8300000, guid: 5e1e837bd595d344a978d8f1dbe58b56, type: 3}
+  - name: p2Dash
     clip: {fileID: 8300000, guid: 5adcd625494ca074a8540530d594dda9, type: 3}
-  - name: 
-    clip: {fileID: 0}
   nextSceneName: End
 --- !u!1 &1403088242
 GameObject:
