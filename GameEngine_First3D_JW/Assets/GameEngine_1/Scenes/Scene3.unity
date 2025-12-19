@@ -794,7 +794,7 @@ Transform:
   m_GameObject: {fileID: 1071293395}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -47.054245, y: 21.41, z: -10}
+  m_LocalPosition: {x: -47.059196, y: 21.41, z: -10}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -1317,7 +1317,7 @@ Transform:
   m_GameObject: {fileID: 1403088242}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -39.502163, y: 21.409996, z: -10}
+  m_LocalPosition: {x: -39.51516, y: 21.409996, z: -10}
   m_LocalScale: {x: 1.5110753, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -2224,33 +2224,33 @@ MonoBehaviour:
   dialogueList:
   - speakerName: ...
     sentence: "\u201C\uC815\uC2E0\uC774 \uB4DC\uB098?\u201D"
-  - speakerName: Player
+  - speakerName: "\uD50C\uB808\uC774\uC5B4"
     sentence: "(\uBA38\uB9AC\uAC00 \uAE68\uC9C8 \uAC83 \uAC19\uAD70...)"
-  - speakerName: Player
+  - speakerName: "\uD50C\uB808\uC774\uC5B4"
     sentence: "(\uB0B4\uAC00 \uC5B4\uB5BB\uAC8C \uC0B4\uC544\uC788\uB294\uAC70\uC9C0?)"
   - speakerName: ...
     sentence: "\"\uC774\uAC70\uB77C\uB3C4 \uB9C8\uC2DC\uAC8C.\" (\uBB3C\uD1B5\uC744
       \uAC74\uB128\uB2E4)"
-  - speakerName: Player
+  - speakerName: "\uD50C\uB808\uC774\uC5B4"
     sentence: "(\uBC8C\uCEE5\uBC8C\uCEE5) \"...\uD6C4\uC6B0 \uAD6C\uD574\uC8FC\uC154\uC11C
       \uAC10\uC0AC\uD569\uB2C8\uB2E4.\""
   - speakerName: ...
     sentence: "\"\uC6B4\uC774 \uC88B\uC558\uC5B4. \uD558\uC9C0\uB9CC \uB450 \uBC88\uC758
       \uD589\uC6B4\uC740 \uC5C6\uC744 \uAC78\uC138. \uB140\uC11D\uC5D0\uAC8C \uB364\uBE44\uB294
       \uAC74 \uC790\uB124\uC5D0\uAC90 \uBD88\uAC00\uB2A5\uD55C \uB3C4\uC804\uC774\uC600\uB124.\""
-  - speakerName: Player
+  - speakerName: "\uD50C\uB808\uC774\uC5B4"
     sentence: "\"\uD558\uC9C0\uB9CC \uB140\uC11D\uC774 \uC81C \uBAA8\uB4E0 \uAC78
       \uC557\uC544\uAC14\uC2B5\uB2C8\uB2E4! \uC774\uB300\uB85C \uB05D\uB0BC \uC21C...\"\n"
   - speakerName: ...
     sentence: "\"\uADF8\uB7FC \uD798\uC744 \uAE30\uB974\uAC8C. \uC57D\uD55C \uC790\uB294
       \uC2AC\uD37C\uD560 \uC790\uACA9\uC870\uCC28 \uC5C6\uB294 \uBC95\uC774\uB2C8\uAE4C.\""
-  - speakerName: Player
+  - speakerName: "\uD50C\uB808\uC774\uC5B4"
     sentence: "\"\uAC15\uD574\uC9C0\uACE0 \uC2F6\uC2B5\uB2C8\uB2E4. \uB140\uC11D\uC744
       \uAEBE\uC744 \uC218\uB9CC \uC788\uB2E4\uBA74 \uBB34\uC5C7\uC774\uB4E0 \uD558\uACA0\uC2B5\uB2C8\uB2E4.\"\n"
   - speakerName: ...
     sentence: "\"\uC88B\uC544. \uB0B4\uC77C \uC774 \uC2DC\uAC04\uC5D0, \uC774\uACF3\uC5D0\uC11C
       \uC790\uB124\uB97C \uAE30\uB2E4\uB9AC\uC9C0.\""
-  - speakerName: Player
+  - speakerName: "\uD50C\uB808\uC774\uC5B4"
     sentence: "\"\uC54C\uACA0\uC2B5\uB2C8\uB2E4. ...\uC131\uD568\uC744 \uC54C \uC218
       \uC788\uACA0\uC2B5\uB2C8\uAE4C?\""
   - speakerName: "\uB85C\uB4DC\uB9AD"
