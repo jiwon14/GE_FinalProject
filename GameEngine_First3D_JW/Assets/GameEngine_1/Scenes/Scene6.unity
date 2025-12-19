@@ -2190,7 +2190,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   fadePanel: {fileID: 1907622712}
-  fadeTime: 3
+  fadeTime: 5
 --- !u!1 &1922418330
 GameObject:
   m_ObjectHideFlags: 0
