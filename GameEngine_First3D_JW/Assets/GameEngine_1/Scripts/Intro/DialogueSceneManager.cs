@@ -139,7 +139,17 @@ public class DialogueSceneManager : MonoBehaviour
         // [추가된 기능] 씬 이동 로직
         if (!string.IsNullOrEmpty(nextSceneName))
         {
-            SceneManager.LoadScene(nextSceneName);
+            if (nextSceneName == "Exit")
+            {
+                Application.Quit();
+                #if UNITY_EDITOR
+                UnityEditor.EditorApplication.isPlaying = false;
+                #endif
+            }
+            else
+            {
+                SceneManager.LoadScene(nextSceneName);
+            }
         }
         else
         {

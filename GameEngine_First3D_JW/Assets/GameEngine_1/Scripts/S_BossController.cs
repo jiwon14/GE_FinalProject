@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 [RequireComponent(typeof(AudioSource))]
 [RequireComponent(typeof(Rigidbody2D))]
@@ -124,6 +125,10 @@ public class S_BossController : MonoBehaviour
     public AudioClip bossBgm;
     [Tooltip("인스펙터에서 사운드 이름과 클립을 등록하세요.")]
     public List<SoundEffect> soundEffects;
+
+    [Header("씬 이동")]
+    [Tooltip("보스 사망 후 이동할 씬의 이름입니다.")]
+    public string nextSceneName;
 
     // --- 내부 컴포넌트 및 상태 변수 ---
     private Rigidbody2D rb;
@@ -613,7 +618,14 @@ public class S_BossController : MonoBehaviour
     private IEnumerator DelayedDestroyRoutine(float delay)
     {
         yield return new WaitForSeconds(delay);
-        Destroy(gameObject);
+        if (!string.IsNullOrEmpty(nextSceneName))
+        {
+            SceneManager.LoadScene(nextSceneName);
+        }
+        else
+        {
+            Destroy(gameObject);
+        }
     }
 
     // --- 외부 호출 및 이벤트 ---

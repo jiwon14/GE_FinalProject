@@ -4601,7 +4601,12 @@ MonoBehaviour:
   healthRecoverTime: 3
   dieSound: {fileID: 0}
   bossBgm: {fileID: 8300000, guid: 9fa6c5375e8b85445905af4696c7204a, type: 3}
-  soundEffects: []
+  soundEffects:
+  - name: p2Attack1
+    clip: {fileID: 8300000, guid: 5adcd625494ca074a8540530d594dda9, type: 3}
+  - name: 
+    clip: {fileID: 0}
+  nextSceneName: End
 --- !u!1 &1403088242
 GameObject:
   m_ObjectHideFlags: 0

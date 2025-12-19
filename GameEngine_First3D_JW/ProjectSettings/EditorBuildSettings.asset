@@ -16,7 +16,7 @@ EditorBuildSettings:
     guid: f856b41d0224803458565f6f83bb4754
   - enabled: 1
     path: Assets/GameEngine_1/Scenes/Scene2_TBoss.unity
-    guid: 3c52da26a18e4eb4ab13d955b166bfd1
+    guid: 8b3de30a092da1747bc7821f2514b391
   - enabled: 1
     path: Assets/GameEngine_1/Scenes/Scene3.unity
     guid: e1120f66909e46641921ffa8b5b23c04
@@ -27,6 +27,9 @@ EditorBuildSettings:
     path: Assets/GameEngine_1/Scenes/Scene5.unity
     guid: 2b0ef4523f5593d448c8eeccafbaa4cc
   - enabled: 1
+    path: Assets/GameEngine_1/Scenes/Scene5-1.unity
+    guid: 9c51712b910ebcd47bea6ce050a0ecae
+  - enabled: 1
     path: Assets/GameEngine_1/Scenes/Scene6.unity
     guid: c19a1599f0075184186ddaa31a4cf782
   - enabled: 1
@@ -35,5 +38,8 @@ EditorBuildSettings:
   - enabled: 1
     path: Assets/GameEngine_1/Scenes/PlayerDied.unity
     guid: a0aa6d4a90cc50c41ad4768da5d0ef38
+  - enabled: 1
+    path: Assets/GameEngine_1/Scenes/End.unity
+    guid: 5ee41778992770e42b177d3f717b817b
   m_configObjects: {}
   m_UseUCBPForAssetBundles: 0

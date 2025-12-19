@@ -2220,7 +2220,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ae1a6b6de641522478ca798088ea02aa, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  nextSceneName: Scene6
+  nextSceneName: Scene5-1
   dialogueList:
   - speakerName: "\uB85C\uB4DC\uB9AD"
     sentence: "(\uCC0C\uADF8\uB7EC\uC9C4 \uD6C8\uB828\uC6A9 \uD22C\uAD6C\uB97C \uB0B4\uB824\uB193\uC73C\uBA70) "
